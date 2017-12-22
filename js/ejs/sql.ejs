@@ -1,0 +1,12 @@
+<% if (datas.length) { %>
+  <table border="1">
+    <% datas.forEach(function (item) { %>
+    <tr>
+      <td><%= item.username %></td>
+      <td><%= item.realname %></td>
+      <td><%= item.password %></td>
+      <td><%= item.created_at.Time %></td>
+    </tr>
+    <% }) %>
+  </table>
+<% } %>
