@@ -17,6 +17,14 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var _cwd string
+
+func init() {
+	var err error
+	_cwd, err = os.Getwd()
+	handErr(err)
+}
+
 func handErr(err error) {
 	if err != nil {
 		panic(err)
@@ -25,13 +33,15 @@ func handErr(err error) {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	u := r.URL
-	cwd, err := os.Getwd()
-	handErr(err)
-	file := filepath.Join(cwd, u.Path)
-	if strings.HasPrefix(file, cwd) {
+	file := filepath.Join(_cwd, u.Path)
+	if strings.HasPrefix(file, _cwd) {
 		ext := filepath.Ext(file)
 		if ext == ".js" {
-			ret, err := runFile(file)
+			runtime := goja.New()
+			response := getResponse(runtime, &w)
+			runtime.Set("response", response)
+
+			ret, err := runFile(file, runtime)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(err.Error()))
@@ -62,7 +72,7 @@ func main() {
 	}
 	filename := os.Args[1]
 
-	r, err := runFile(filename)
+	r, err := runFile(filename, nil)
 	if err != nil {
 		switch err := err.(type) {
 		case *goja.Exception:
@@ -78,13 +88,15 @@ func main() {
 	server()
 }
 
-func runFile(filename string) (*goja.Value, error) {
+func runFile(filename string, runtime *goja.Runtime) (*goja.Value, error) {
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	runtime := goja.New()
+	if runtime == nil {
+		runtime = goja.New()
+	}
 
 	// this can be shared by multiple runtimes
 	registry := new(require.Registry)

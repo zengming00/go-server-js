@@ -21,7 +21,7 @@ func (This *fileRuntime) write(call goja.FunctionCall) goja.Value {
 		}
 		return nil
 	}
-	panic(This.runtime.NewTypeError("write data is not a byte array"))
+	panic(This.runtime.NewTypeError("file.write() data is not a byte array"))
 }
 
 func (This *fileRuntime) read(call goja.FunctionCall) goja.Value {
