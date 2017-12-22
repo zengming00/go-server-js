@@ -1,4 +1,4 @@
-package main
+package http
 
 import "github.com/dop251/goja"
 import "net/http"
@@ -9,50 +9,10 @@ type responseRuntime struct {
 	w       *http.ResponseWriter
 }
 
-type headerObj struct {
-	runtime *goja.Runtime
-	header  *http.Header
-}
-
-func (This *headerObj) add(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).String()
-	This.header.Add(key, value)
-	return nil
-}
-
-func (This *headerObj) del(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	This.header.Del(key)
-	return nil
-}
-
-func (This *headerObj) get(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := This.header.Get(key)
-	return This.runtime.ToValue(value)
-}
-
-func (This *headerObj) set(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).String()
-	This.header.Set(key, value)
-	return nil
-}
-
 func (This *responseRuntime) header(call goja.FunctionCall) goja.Value {
 	w := *This.w
 	hd := w.Header()
-	obj := &headerObj{
-		runtime: This.runtime,
-		header:  &hd,
-	}
-	o := This.runtime.NewObject()
-	o.Set("add", obj.add)
-	o.Set("del", obj.del)
-	o.Set("set", obj.set)
-	o.Set("get", obj.get)
-	return o
+	return newHeader(This.runtime, &hd)
 }
 
 func (This *responseRuntime) write(call goja.FunctionCall) goja.Value {
@@ -73,6 +33,8 @@ func (This *responseRuntime) write(call goja.FunctionCall) goja.Value {
 		}
 	case []byte:
 		data = t
+	case string:
+		data = []byte(t)
 	default:
 		panic(This.runtime.NewTypeError("response.write() data is not a byte array"))
 	}
@@ -92,7 +54,7 @@ func (This *responseRuntime) writeHeader(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func getResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
+func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
 	This := &responseRuntime{
 		runtime: runtime,
 		w:       w,

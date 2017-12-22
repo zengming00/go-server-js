@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/zengming00/go-server-js/lib"
+	mhttp "github.com/zengming00/go-server-js/lib/http"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
@@ -38,8 +39,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		ext := filepath.Ext(file)
 		if ext == ".js" {
 			runtime := goja.New()
-			response := getResponse(runtime, &w)
+			response := mhttp.NewResponse(runtime, &w)
+			request := mhttp.NewRequest(runtime, r)
 			runtime.Set("response", response)
+			runtime.Set("request", request)
 
 			ret, err := runFile(file, runtime)
 			if err != nil {
