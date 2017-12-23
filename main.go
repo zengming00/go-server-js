@@ -10,13 +10,19 @@ import (
 	"time"
 
 	_ "github.com/zengming00/go-server-js/lib"
+	_ "github.com/zengming00/go-server-js/lib/db"
+	_ "github.com/zengming00/go-server-js/lib/db/redis"
 	mhttp "github.com/zengming00/go-server-js/lib/http"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 )
+
+// go-sqlite3在win32下的问题
+// https://github.com/mattn/go-sqlite3/issues/358
 
 var _cwd string
 

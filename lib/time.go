@@ -7,24 +7,24 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 )
 
-type timeRuntime struct {
+type _time struct {
 	runtime *goja.Runtime
 	t       *time.Time
 }
 
-func (This *timeRuntime) stringFunc(call goja.FunctionCall) goja.Value {
+func (This *_time) stringFunc(call goja.FunctionCall) goja.Value {
 	str := This.t.String()
 	return This.runtime.ToValue(str)
 }
 
-func (This *timeRuntime) sleep(call goja.FunctionCall) goja.Value {
+func (This *_time) sleep(call goja.FunctionCall) goja.Value {
 	d := call.Argument(0).ToInteger()
 	<-time.After(time.Duration(d) * time.Millisecond)
 	return nil
 }
 
 func NewTime(runtime *goja.Runtime, t *time.Time) *goja.Object {
-	obj := &timeRuntime{
+	obj := &_time{
 		runtime: runtime,
 		t:       t,
 	}
@@ -36,10 +36,9 @@ func NewTime(runtime *goja.Runtime, t *time.Time) *goja.Object {
 
 func init() {
 	require.RegisterNativeModule("time", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &timeRuntime{
+		This := &_time{
 			runtime: runtime,
 		}
-
 		o := module.Get("exports").(*goja.Object)
 		o.Set("sleep", This.sleep)
 	})

@@ -4,18 +4,18 @@ import "github.com/dop251/goja"
 import "net/http"
 import "fmt"
 
-type responseRuntime struct {
+type _resp struct {
 	runtime *goja.Runtime
 	w       *http.ResponseWriter
 }
 
-func (This *responseRuntime) header(call goja.FunctionCall) goja.Value {
+func (This *_resp) header(call goja.FunctionCall) goja.Value {
 	w := *This.w
 	hd := w.Header()
-	return newHeader(This.runtime, &hd)
+	return NewHeader(This.runtime, &hd)
 }
 
-func (This *responseRuntime) write(call goja.FunctionCall) goja.Value {
+func (This *_resp) write(call goja.FunctionCall) goja.Value {
 	p1 := call.Argument(0).Export()
 
 	var data []byte
@@ -47,14 +47,14 @@ func (This *responseRuntime) write(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(n)
 }
 
-func (This *responseRuntime) writeHeader(call goja.FunctionCall) goja.Value {
+func (This *_resp) writeHeader(call goja.FunctionCall) goja.Value {
 	n := call.Argument(0).ToInteger()
 	w := *This.w
 	w.WriteHeader(int(n))
 	return nil
 }
 
-func (This *responseRuntime) setCookie(call goja.FunctionCall) goja.Value {
+func (This *_resp) setCookie(call goja.FunctionCall) goja.Value {
 	cookie := &http.Cookie{}
 	cookie.Name = call.Argument(0).String()
 	cookie.Value = call.Argument(1).String()
@@ -63,7 +63,7 @@ func (This *responseRuntime) setCookie(call goja.FunctionCall) goja.Value {
 }
 
 func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
-	This := &responseRuntime{
+	This := &_resp{
 		runtime: runtime,
 		w:       w,
 	}

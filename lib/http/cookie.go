@@ -7,18 +7,18 @@ import (
 	"github.com/zengming00/go-server-js/lib"
 )
 
-type cookieRuntime struct {
+type _cookie struct {
 	runtime *goja.Runtime
 	cookie  *http.Cookie
 }
 
-func (This *cookieRuntime) stringFunc(call goja.FunctionCall) goja.Value {
+func (This *_cookie) stringFunc(call goja.FunctionCall) goja.Value {
 	str := This.cookie.String()
 	return This.runtime.ToValue(str)
 }
 
-func newCookie(runtime *goja.Runtime, cookie *http.Cookie) *goja.Object {
-	obj := &cookieRuntime{
+func NewCookie(runtime *goja.Runtime, cookie *http.Cookie) *goja.Object {
+	obj := &_cookie{
 		runtime: runtime,
 		cookie:  cookie,
 	}

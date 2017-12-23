@@ -11,11 +11,11 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 )
 
-type httpRuntime struct {
+type _http struct {
 	runtime *goja.Runtime
 }
 
-func (This *httpRuntime) request(call goja.FunctionCall) goja.Value {
+func (This *_http) request(call goja.FunctionCall) goja.Value {
 	method := call.Argument(0).String()
 	url := call.Argument(1).String()
 	headers := call.Argument(2).Export().(map[string]interface{})
@@ -59,7 +59,7 @@ func (This *httpRuntime) request(call goja.FunctionCall) goja.Value {
 
 func init() {
 	require.RegisterNativeModule("http", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &httpRuntime{
+		This := &_http{
 			runtime: runtime,
 		}
 

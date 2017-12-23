@@ -7,11 +7,11 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 )
 
-type fileRuntime struct {
+type _file struct {
 	runtime *goja.Runtime
 }
 
-func (This *fileRuntime) write(call goja.FunctionCall) goja.Value {
+func (This *_file) write(call goja.FunctionCall) goja.Value {
 	filename := call.Argument(0).String()
 	data := call.Argument(1).Export()
 	if bts, ok := data.([]byte); ok {
@@ -24,7 +24,7 @@ func (This *fileRuntime) write(call goja.FunctionCall) goja.Value {
 	panic(This.runtime.NewTypeError("file.write() data is not a byte array"))
 }
 
-func (This *fileRuntime) read(call goja.FunctionCall) goja.Value {
+func (This *_file) read(call goja.FunctionCall) goja.Value {
 	filename := call.Argument(0).String()
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -35,10 +35,9 @@ func (This *fileRuntime) read(call goja.FunctionCall) goja.Value {
 
 func init() {
 	require.RegisterNativeModule("file", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &fileRuntime{
+		This := &_file{
 			runtime: runtime,
 		}
-
 		o := module.Get("exports").(*goja.Object)
 		o.Set("write", This.write)
 		o.Set("read", This.read)

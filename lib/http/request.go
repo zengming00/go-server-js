@@ -6,23 +6,23 @@ import (
 	"github.com/dop251/goja"
 )
 
-type requestRuntime struct {
+type _req struct {
 	runtime *goja.Runtime
 	r       *http.Request
 }
 
-func (This *requestRuntime) formValue(call goja.FunctionCall) goja.Value {
+func (This *_req) formValue(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
 	value := This.r.FormValue(key)
 	return This.runtime.ToValue(value)
 }
 
-func (This *requestRuntime) userAgent(call goja.FunctionCall) goja.Value {
+func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 	value := This.r.UserAgent()
 	return This.runtime.ToValue(value)
 }
 
-func (This *requestRuntime) parseForm(call goja.FunctionCall) goja.Value {
+func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 	err := This.r.ParseForm()
 	if err != nil {
 		return This.runtime.NewGoError(err)
@@ -30,17 +30,17 @@ func (This *requestRuntime) parseForm(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func (This *requestRuntime) cookie(call goja.FunctionCall) goja.Value {
+func (This *_req) cookie(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	c, err := This.r.Cookie(name)
 	if err != nil {
 		panic(This.runtime.NewGoError(err))
 	}
-	return newCookie(This.runtime, c)
+	return NewCookie(This.runtime, c)
 }
 
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
-	This := &requestRuntime{
+	This := &_req{
 		runtime: runtime,
 		r:       r,
 	}
@@ -48,7 +48,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o := runtime.NewObject()
 	o.Set("contentLength", r.ContentLength)
 	o.Set("method", r.Method)
-	o.Set("header", newHeader(runtime, &r.Header))
+	o.Set("header", NewHeader(runtime, &r.Header))
 	o.Set("host", r.Host)
 	o.Set("requestURI", r.RequestURI)
 

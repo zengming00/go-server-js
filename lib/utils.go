@@ -7,16 +7,16 @@ import (
 	"github.com/dop251/goja_nodejs/require"
 )
 
-type utilsRuntime struct {
+type _utils struct {
 	runtime *goja.Runtime
 }
 
-func (This *utilsRuntime) print(call goja.FunctionCall) goja.Value {
+func (This *_utils) print(call goja.FunctionCall) goja.Value {
 	fmt.Print(call.Argument(0).String())
 	return nil
 }
 
-func (This *utilsRuntime) toString(call goja.FunctionCall) goja.Value {
+func (This *_utils) toString(call goja.FunctionCall) goja.Value {
 	data := call.Argument(0).Export()
 	if bts, ok := data.([]byte); ok {
 		return This.runtime.ToValue(string(bts))
@@ -26,10 +26,9 @@ func (This *utilsRuntime) toString(call goja.FunctionCall) goja.Value {
 
 func init() {
 	require.RegisterNativeModule("utils", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &utilsRuntime{
+		This := &_utils{
 			runtime: runtime,
 		}
-
 		o := module.Get("exports").(*goja.Object)
 		o.Set("print", This.print)
 		o.Set("toString", This.toString)
