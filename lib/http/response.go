@@ -54,6 +54,14 @@ func (This *responseRuntime) writeHeader(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *responseRuntime) setCookie(call goja.FunctionCall) goja.Value {
+	cookie := &http.Cookie{}
+	cookie.Name = call.Argument(0).String()
+	cookie.Value = call.Argument(1).String()
+	http.SetCookie(*This.w, cookie)
+	return nil
+}
+
 func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
 	This := &responseRuntime{
 		runtime: runtime,
@@ -64,5 +72,6 @@ func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
 	o.Set("header", This.header)
 	o.Set("write", This.write)
 	o.Set("writeHeader", This.writeHeader)
+	o.Set("setCookie", This.setCookie)
 	return o
 }
