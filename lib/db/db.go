@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/dop251/goja"
 )
@@ -25,6 +26,17 @@ func (This *_db) close(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(err)
 }
 
+func (This *_db) exec(call goja.FunctionCall) goja.Value {
+	// todo
+	query := call.Argument(0).String()
+	r, err := This.db.Exec(query)
+	if err != nil {
+		panic(This.runtime.NewGoError(err))
+	}
+	fmt.Println(r)
+	return nil
+}
+
 func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	obj := &_db{
 		runtime: runtime,
@@ -33,5 +45,6 @@ func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	o := runtime.NewObject()
 	o.Set("query", obj.query)
 	o.Set("close", obj.close)
+	o.Set("exec", obj.exec)
 	return o
 }

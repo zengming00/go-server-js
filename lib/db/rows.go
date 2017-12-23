@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/dop251/goja"
@@ -44,6 +45,8 @@ func (This *_rows) scan(call goja.FunctionCall) goja.Value {
 	m := make(map[string]interface{})
 	for i, col := range cols {
 		switch vv := arr[i].(type) {
+		case *int64:
+			m[col] = *vv
 		case *int32:
 			m[col] = *vv
 		case *sql.NullString:
@@ -58,7 +61,10 @@ func (This *_rows) scan(call goja.FunctionCall) goja.Value {
 			m[col] = string(*vv)
 		case *mysql.NullTime:
 			m[col] = *vv
+		case *string:
+			m[col] = *vv
 		default:
+			fmt.Printf("%T\n", vv)
 			panic(This.runtime.NewGoError(errors.New("unknown type")))
 		}
 	}

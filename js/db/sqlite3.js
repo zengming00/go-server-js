@@ -1,10 +1,12 @@
 var sql = require('sql')
+var time = require('time')
 
 var ddl = 'CREATE TABLE IF NOT EXISTS [users] ([id] INTEGER PRIMARY KEY AUTOINCREMENT, [username] TEXT, [realname] TEXT, [password] TEXT, [created_at] DATETIME);'
 
-var db = sql.new("sqlite3", "./test.db")
-var ret = db.query(ddl)
-console.log(ret)
+var db = sql.open("sqlite3", "./js/db/test.db")
+db.exec(ddl)
+db.exec("insert into users('username','realname','password','created_at') values('zm', 'zengming', '123456', '2017-12-23 21:57:00');")
+db.exec("insert into users('username','realname','password','created_at') values('zm', '曾明', '123456', '" + time.nowString() + "');")
 db.close()
 
 /*

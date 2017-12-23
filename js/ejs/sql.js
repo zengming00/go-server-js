@@ -11,8 +11,9 @@ function fileLoader(filePath) {
 var html;
 
 try {
-  var db = sql.new("mysql", "root:root@/test2?parseTime=true&loc=" + url.queryEscape("Asia/Shanghai"))
+  // var db = sql.new("mysql", "root:root@/test2?parseTime=true&loc=" + url.queryEscape("Asia/Shanghai"))
   // var db = sql.new("mysql", "root:root@/test2")
+  var db = sql.open("sqlite3", "./js/db/test.db")
   var rows = db.query("select * from users")
 
   var rowDatas = [];
@@ -27,7 +28,7 @@ try {
     throw err;
   }
 
-
+  log(rowDatas)
   var path = './js/ejs/sql.ejs';
   var content = fileLoader(path);
   var func = ejs.compile(content, { filename: path });

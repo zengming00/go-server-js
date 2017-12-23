@@ -5,7 +5,7 @@
       <td><%= item.username %></td>
       <td><%= item.realname %></td>
       <td><%= item.password %></td>
-      <td><%= item.created_at.Time %></td>
+      <td><%= item.created_at.Time ? item.created_at.Time : item.created_at %></td>
     </tr>
     <% }) %>
   </table>
