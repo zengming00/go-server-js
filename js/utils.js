@@ -1,5 +1,5 @@
 exports.log = function (data) {
   console.log("log:", data)
-  console.log("log:", JSON.stringify(data, null, 2))
+  console.log("log json:", JSON.stringify(data, null, 2))
 }
 
