@@ -23,8 +23,18 @@ import (
 
 // go-sqlite3在win32下的问题
 // https://github.com/mattn/go-sqlite3/issues/358
+// 编译mips
+// apt-get install gcc-arm-linux-gnu
+// apt-get install g++-arm-linux-gnu
+// CGO_ENABLED=1 GOOS=linux GOARCH=mips CC=mips-linux-gnu-gcc CXX=mips-linux-gnu-g++ go build -v  -ldflags "-linkmode external -extldflags -static"
 
 var _cwd string
+
+type _server struct {
+	runtime          *goja.Runtime
+	registry         *require.Registry
+	writeResultValue bool
+}
 
 func init() {
 	var err error
@@ -38,30 +48,41 @@ func handErr(err error) {
 	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 	u := r.URL
 	file := filepath.Join(_cwd, u.Path)
 	if strings.HasPrefix(file, _cwd) {
 		ext := filepath.Ext(file)
 		if ext == ".js" {
-			runtime := goja.New()
+			runtime := This.runtime
+			registry := This.registry
+
+			if runtime == nil {
+				runtime = goja.New()
+			}
+			if registry == nil {
+				registry = new(require.Registry)
+			}
 			response := mhttp.NewResponse(runtime, &w)
 			request := mhttp.NewRequest(runtime, r)
 			runtime.Set("response", response)
 			runtime.Set("request", request)
 
-			ret, err := runFile(file, runtime)
+			ret, err := runFile(file, runtime, registry)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(err.Error()))
+				panic(err)
 				return
 			}
 			if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
 				w.WriteHeader(http.StatusOK)
 				return
 			}
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.Write([]byte((*ret).String()))
+			// w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if This.writeResultValue {
+				w.Write([]byte((*ret).String()))
+			}
 			return
 		}
 	}
@@ -69,46 +90,47 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func server() {
-	http.HandleFunc("/", handler)
+	s := &_server{
+		registry: new(require.Registry),
+	}
+	http.HandleFunc("/", s.handler)
 	err := http.ListenAndServe(":8080", nil)
 	handErr(err)
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("please input a file name")
-		os.Exit(1)
-	}
-	filename := os.Args[1]
-
-	r, err := runFile(filename, nil)
-	if err != nil {
-		switch err := err.(type) {
-		case *goja.Exception:
-			fmt.Println(err.String())
-		case *goja.InterruptedError:
-			fmt.Println(err.String())
-		default:
-			fmt.Println(err)
+	if len(os.Args) == 2 {
+		filename := os.Args[1]
+		start := time.Now()
+		// this can be shared by multiple runtimes
+		registry := new(require.Registry)
+		for i := 0; i < 1000; i++ {
+			runtime := goja.New()
+			r, err := runFile(filename, runtime, registry)
+			if err != nil {
+				switch err := err.(type) {
+				case *goja.Exception:
+					fmt.Println(err.String())
+				case *goja.InterruptedError:
+					fmt.Println(err.String())
+				default:
+					fmt.Println(err)
+				}
+				os.Exit(64)
+			}
+			fmt.Println(*r)
 		}
-		os.Exit(64)
+		fmt.Printf("done (%s)", time.Since(start))
 	}
-	fmt.Println(*r)
 	server()
 }
 
-func runFile(filename string, runtime *goja.Runtime) (*goja.Value, error) {
+func runFile(filename string, runtime *goja.Runtime, registry *require.Registry) (*goja.Value, error) {
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	if runtime == nil {
-		runtime = goja.New()
-	}
-
-	// this can be shared by multiple runtimes
-	registry := new(require.Registry)
 	registry.Enable(runtime)
 	console.Enable(runtime)
 

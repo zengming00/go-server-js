@@ -8,7 +8,6 @@ function fileLoader(filePath) {
   return utils.toString(file.read(filePath));
 }
 
-var html;
 
 try {
   // var db = sql.new("mysql", "root:root@/test2?parseTime=true&loc=" + url.queryEscape("Asia/Shanghai"))
@@ -27,12 +26,13 @@ try {
     log(err)
     throw err;
   }
-
+  db.close()
   log(rowDatas)
   var path = './js/ejs/sql.ejs';
   var content = fileLoader(path);
   var func = ejs.compile(content, { filename: path });
-  html = func({ datas: rowDatas });
+  var html = func({ datas: rowDatas });
+  response.write(html)
 } catch (e) {
   log(e)
   throw e;
@@ -42,5 +42,3 @@ function log(data) {
   console.log("log:", data)
   console.log("log:", JSON.stringify(data, null, 2))
 }
-
-html;
