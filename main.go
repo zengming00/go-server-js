@@ -73,12 +73,11 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(err.Error()))
 				panic(err)
-				return
 			}
-			if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
+			// if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
+			// 	w.WriteHeader(http.StatusOK)
+			// 	return
+			// }
 			// w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			if This.writeResultValue {
 				w.Write([]byte((*ret).String()))
@@ -93,6 +92,7 @@ func server() {
 	s := &_server{
 		registry: new(require.Registry),
 	}
+	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", s.handler)
 	err := http.ListenAndServe(":8080", nil)
 	handErr(err)

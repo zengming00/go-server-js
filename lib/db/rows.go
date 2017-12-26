@@ -20,7 +20,7 @@ func (This *_rows) err(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(err)
 }
 
-func (This *_rows) scan(call goja.FunctionCall) goja.Value {
+func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
 	rows := This.rows
 	cols, err := rows.Columns()
 	if err != nil {
@@ -69,6 +69,16 @@ func (This *_rows) scan(call goja.FunctionCall) goja.Value {
 		}
 	}
 	return This.runtime.ToValue(m)
+}
+
+func (This *_rows) scan(call goja.FunctionCall) goja.Value {
+	var args []interface{}
+	length := len(call.Arguments)
+	for i := 0; i < length; i++ {
+		args = append(args, call.Argument(i).Export())
+	}
+	err := This.rows.Scan(args...)
+	return This.runtime.ToValue(err)
 }
 
 func (This *_rows) next(call goja.FunctionCall) goja.Value {

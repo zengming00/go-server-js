@@ -7,28 +7,21 @@
 var ejs = require("./js/ejs/ejs.min.js");
 var file = require("file");
 var utils = require("utils");
+var myUtils = require('./js/utils.js');
 
-function fileLoader(filePath) {
-  return utils.toString(file.read(filePath));
-}
 
-ejs.fileLoader = fileLoader;
+ejs.fileLoader = myUtils.fileLoader;
 
 var data = {
   names: ['foo', 'bar', '"baz']
 };
 
-var result;
 
 ejs.renderFile('./js/ejs/list.ejs', data, function (err, html) {
   if (err) {
     console.log(err);
     return
   }
-  console.log(html);
-  result = html;
+  response.header().set('Content-Type', 'text/html; charset=utf-8');
+  response.write(html);
 });
-
-console.log('ejs version:', ejs.VERSION)
-
-result;

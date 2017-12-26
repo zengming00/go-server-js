@@ -15,7 +15,7 @@ func (This *_redis) stringFunc(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	str, err := redis.String(repl, nil)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("string", This.runtime.ToValue(str))
@@ -28,7 +28,7 @@ func (This *_redis) dial(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	conn, err := redis.Dial(network, address)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("conn", NewConn(This.runtime, &conn))

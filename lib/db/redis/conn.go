@@ -25,7 +25,7 @@ func (This *_conn) do(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	reply, err := (*This.conn).Do(commandName, args...)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("reply", This.runtime.ToValue(reply))

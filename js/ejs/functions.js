@@ -7,10 +7,14 @@ var file = require("file");
 var utils = require("utils");
 
 function fileLoader(filePath) {
-  return utils.toString(file.read(filePath));
+  var r = file.read(filePath);
+  if(r.err){
+    throw r.err
+  }
+  return utils.toString(r.data);
 }
 
-ejs.fileLoader = fileLoader; 
+ejs.fileLoader = fileLoader;
 
 var data = {
   users: [
@@ -23,7 +27,7 @@ var data = {
 
 var path = './js/ejs/functions.ejs';
 var content = fileLoader(path);
-var func = ejs.compile(content, {filename: path});
+var func = ejs.compile(content, { filename: path });
 var ret = func(data);
 response.write(ret)
 

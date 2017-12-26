@@ -29,7 +29,7 @@ func (This *_file) read(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("data", This.runtime.ToValue(data))

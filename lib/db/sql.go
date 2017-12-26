@@ -17,7 +17,7 @@ func (This *_sql) open(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("db", NewDB(This.runtime, db))

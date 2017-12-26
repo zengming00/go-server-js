@@ -17,7 +17,7 @@ func (This *_db) query(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	rows, err := This.db.Query(query)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	retVal.Set("rows", NewRows(This.runtime, rows))
@@ -35,7 +35,8 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
 	r, err := This.db.Exec(query)
 	if err != nil {
-		retVal.Set("err", This.runtime.NewGoError(err))
+		fmt.Println(err)
+		retVal.Set("err", err.Error())
 		return retVal
 	}
 	fmt.Println(r)

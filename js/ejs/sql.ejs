@@ -2,9 +2,11 @@
   <table border="1">
     <% datas.forEach(function (item) { %>
     <tr>
-      <td><%= item.username %></td>
-      <td><%= item.realname %></td>
-      <td><%= item.password %></td>
+      <td><%= item.id %></td>
+      <td><%= item.firstname %></td>
+      <td><%= item.lastname %></td>
+      <td><%= item.phone %></td>
+      <td><%= item.email %></td>
       <td><%= item.created_at.Time ? item.created_at.Time : item.created_at %></td>
     </tr>
     <% }) %>
