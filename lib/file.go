@@ -17,20 +17,23 @@ func (This *_file) write(call goja.FunctionCall) goja.Value {
 	if bts, ok := data.([]byte); ok {
 		err := ioutil.WriteFile(filename, bts, 0666)
 		if err != nil {
-			panic(This.runtime.NewGoError(err))
+			return This.runtime.NewGoError(err)
 		}
 		return nil
 	}
-	panic(This.runtime.NewTypeError("file.write() data is not a byte array"))
+	return This.runtime.NewTypeError("file.write() data is not a byte array")
 }
 
 func (This *_file) read(call goja.FunctionCall) goja.Value {
 	filename := call.Argument(0).String()
+	retVal := This.runtime.NewObject()
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return This.runtime.ToValue(data)
+	retVal.Set("data", This.runtime.ToValue(data))
+	return retVal
 }
 
 func init() {

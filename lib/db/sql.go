@@ -14,12 +14,14 @@ type _sql struct {
 func (This *_sql) open(call goja.FunctionCall) goja.Value {
 	driverName := call.Argument(0).String()
 	dataSourceName := call.Argument(1).String()
-
+	retVal := This.runtime.NewObject()
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return NewDB(This.runtime, db)
+	retVal.Set("db", NewDB(This.runtime, db))
+	return retVal
 }
 
 func (This *_sql) drivers(call goja.FunctionCall) goja.Value {

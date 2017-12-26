@@ -14,11 +14,14 @@ type _db struct {
 
 func (This *_db) query(call goja.FunctionCall) goja.Value {
 	query := call.Argument(0).String()
+	retVal := This.runtime.NewObject()
 	rows, err := This.db.Query(query)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return NewRows(This.runtime, rows)
+	retVal.Set("rows", NewRows(This.runtime, rows))
+	return retVal
 }
 
 func (This *_db) close(call goja.FunctionCall) goja.Value {
@@ -29,9 +32,11 @@ func (This *_db) close(call goja.FunctionCall) goja.Value {
 func (This *_db) exec(call goja.FunctionCall) goja.Value {
 	// todo
 	query := call.Argument(0).String()
+	retVal := This.runtime.NewObject()
 	r, err := This.db.Exec(query)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
 	fmt.Println(r)
 	return nil

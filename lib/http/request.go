@@ -32,11 +32,15 @@ func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 
 func (This *_req) cookie(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
+	o := This.runtime.NewObject()
+
 	c, err := This.r.Cookie(name)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		o.Set("err", This.runtime.NewGoError(err))
+	} else {
+		o.Set("cookie", NewCookie(This.runtime, c))
 	}
-	return NewCookie(This.runtime, c)
+	return o
 }
 
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {

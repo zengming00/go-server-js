@@ -17,6 +17,7 @@ func (This *_resp) header(call goja.FunctionCall) goja.Value {
 
 func (This *_resp) write(call goja.FunctionCall) goja.Value {
 	p1 := call.Argument(0).Export()
+	retVal := This.runtime.NewObject()
 
 	var data []byte
 	switch t := p1.(type) {
@@ -29,22 +30,26 @@ func (This *_resp) write(call goja.FunctionCall) goja.Value {
 					continue
 				}
 			}
-			panic(This.runtime.NewTypeError(fmt.Sprintf("response.write() can not convert to byte `data[%d] = %v`", i, v)))
+			retVal.Set("err", This.runtime.NewTypeError(fmt.Sprintf("response.write() can not convert to byte `data[%d] = %v`", i, v)))
+			return retVal
 		}
 	case []byte:
 		data = t
 	case string:
 		data = []byte(t)
 	default:
-		panic(This.runtime.NewTypeError("response.write() data is not a byte array"))
+		retVal.Set("err", This.runtime.NewTypeError("response.write() data is not a byte array"))
+		return retVal
 	}
 
 	w := *This.w
 	n, err := w.Write(data)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return This.runtime.ToValue(n)
+	retVal.Set("n", This.runtime.ToValue(n))
+	return retVal
 }
 
 func (This *_resp) writeHeader(call goja.FunctionCall) goja.Value {

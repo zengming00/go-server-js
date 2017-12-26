@@ -18,15 +18,18 @@ func (This *_conn) close(call goja.FunctionCall) goja.Value {
 func (This *_conn) do(call goja.FunctionCall) goja.Value {
 	var args []interface{}
 	commandName := call.Argument(0).String()
-	len := len(call.Arguments)
-	for i := 1; i < len; i++ {
+	length := len(call.Arguments)
+	for i := 1; i < length; i++ {
 		args = append(args, call.Argument(i).Export())
 	}
+	retVal := This.runtime.NewObject()
 	reply, err := (*This.conn).Do(commandName, args...)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return This.runtime.ToValue(reply)
+	retVal.Set("reply", This.runtime.ToValue(reply))
+	return retVal
 }
 
 func NewConn(runtime *goja.Runtime, conn *redis.Conn) *goja.Object {

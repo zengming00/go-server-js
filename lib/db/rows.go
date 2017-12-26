@@ -78,10 +78,7 @@ func (This *_rows) next(call goja.FunctionCall) goja.Value {
 
 func (This *_rows) close(call goja.FunctionCall) goja.Value {
 	err := This.rows.Close()
-	if err != nil {
-		panic(This.runtime.NewGoError(err))
-	}
-	return nil
+	return This.runtime.ToValue(err)
 }
 
 func NewRows(runtime *goja.Runtime, rows *sql.Rows) *goja.Object {

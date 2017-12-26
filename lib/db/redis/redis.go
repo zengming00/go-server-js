@@ -12,21 +12,27 @@ type _redis struct {
 
 func (This *_redis) stringFunc(call goja.FunctionCall) goja.Value {
 	repl := call.Argument(0).Export()
+	retVal := This.runtime.NewObject()
 	str, err := redis.String(repl, nil)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return This.runtime.ToValue(str)
+	retVal.Set("string", This.runtime.ToValue(str))
+	return retVal
 }
 
 func (This *_redis) dial(call goja.FunctionCall) goja.Value {
 	network := call.Argument(0).String()
 	address := call.Argument(1).String()
+	retVal := This.runtime.NewObject()
 	conn, err := redis.Dial(network, address)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		retVal.Set("err", This.runtime.NewGoError(err))
+		return retVal
 	}
-	return NewConn(This.runtime, &conn)
+	retVal.Set("conn", NewConn(This.runtime, &conn))
+	return retVal
 }
 
 func init() {
