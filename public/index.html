@@ -36,14 +36,14 @@
 		function newUser(){
 			$('#dlg').dialog('open').dialog('setTitle','New User');
 			$('#fm').form('clear');
-			url = 'save_user.php';
+			url = '/js/db/sqlite3.js?action=save_user';
 		}
 		function editUser(){
 			var row = $('#dg').datagrid('getSelected');
 			if (row){
 				$('#dlg').dialog('open').dialog('setTitle','Edit User');
 				$('#fm').form('load',row);
-				url = 'update_user.php?id='+row.id;
+				url = '/js/db/sqlite3.js?action=update_user&id='+row.id;
 			}
 		}
 		function saveUser(){
@@ -53,7 +53,8 @@
 					return $(this).form('validate');
 				},
 				success: function(result){
-					var result = eval('('+result+')');
+					var result = JSON.parse(result);
+					console.log(result);
 					if (result.success){
 						$('#dlg').dialog('close');		// close the dialog
 						$('#dg').datagrid('reload');	// reload the user data
@@ -71,7 +72,11 @@
 			if (row){
 				$.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
 					if (r){
-						$.post('remove_user.php',{id:row.id},function(result){
+						var data = {
+							action: 'remove_user',
+							id: row.id
+						};
+						$.post('/js/db/sqlite3.js',data,function(result){
 							if (result.success){
 								$('#dg').datagrid('reload');	// reload the user data
 							} else {
@@ -94,7 +99,7 @@
 		<div>Click the buttons on datagrid toolbar to do crud actions.</div>
 	</div>
 	
-	<table id="dg" title="My Users" class="easyui-datagrid" style="width:700px;height:250px"
+	<table id="dg" title="My Users" class="easyui-datagrid" style="width:700px;height:500px"
 			url="/js/db/sqlite3.js?action=get_users"
 			toolbar="#toolbar" pagination="true"
 			rownumbers="true" fitColumns="true" singleSelect="true">

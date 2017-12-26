@@ -3,6 +3,7 @@ package redis
 import (
 	"github.com/dop251/goja"
 	"github.com/garyburd/redigo/redis"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _conn struct {
@@ -16,14 +17,10 @@ func (This *_conn) close(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_conn) do(call goja.FunctionCall) goja.Value {
-	var args []interface{}
 	commandName := call.Argument(0).String()
-	length := len(call.Arguments)
-	for i := 1; i < length; i++ {
-		args = append(args, call.Argument(i).Export())
-	}
+	args := lib.GetAllArgs(&call)
 	retVal := This.runtime.NewObject()
-	reply, err := (*This.conn).Do(commandName, args...)
+	reply, err := (*This.conn).Do(commandName, args[1:]...)
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal

@@ -8,6 +8,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/go-sql-driver/mysql"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _rows struct {
@@ -72,11 +73,7 @@ func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_rows) scan(call goja.FunctionCall) goja.Value {
-	var args []interface{}
-	length := len(call.Arguments)
-	for i := 0; i < length; i++ {
-		args = append(args, call.Argument(i).Export())
-	}
+	args := lib.GetAllArgs(&call)
 	err := This.rows.Scan(args...)
 	return This.runtime.ToValue(err)
 }

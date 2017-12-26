@@ -43,6 +43,18 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *_db) prepare(call goja.FunctionCall) goja.Value {
+	query := call.Argument(0).String()
+	retVal := This.runtime.NewObject()
+	stmt, err := This.db.Prepare(query)
+	if err != nil {
+		retVal.Set("err", err.Error())
+		return retVal
+	}
+	retVal.Set("stmt", NewStmt(This.runtime, stmt))
+	return retVal
+}
+
 func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	obj := &_db{
 		runtime: runtime,
@@ -52,5 +64,6 @@ func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	o.Set("query", obj.query)
 	o.Set("close", obj.close)
 	o.Set("exec", obj.exec)
+	o.Set("prepare", obj.prepare)
 	return o
 }

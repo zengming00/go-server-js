@@ -23,10 +23,7 @@ func scan(dest ...interface{}) {
 }
 
 func (This *_types) scan(call goja.FunctionCall) goja.Value {
-	args := make([]interface{}, len(call.Arguments))
-	for i, v := range call.Arguments {
-		args[i] = v.Export()
-	}
+	args := GetAllArgs(&call)
 	scan(args...)
 	return nil
 }

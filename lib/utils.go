@@ -11,6 +11,14 @@ type _utils struct {
 	runtime *goja.Runtime
 }
 
+func GetAllArgs(call *goja.FunctionCall) []interface{} {
+	args := make([]interface{}, len(call.Arguments))
+	for i, v := range call.Arguments {
+		args[i] = v.Export()
+	}
+	return args
+}
+
 func (This *_utils) print(call goja.FunctionCall) goja.Value {
 	fmt.Print(call.Argument(0).String())
 	return nil

@@ -13,18 +13,19 @@ if (r.err) {
 }
 var db = r.db;
 
-if (action === 'init') {
-    var ddl = 'CREATE TABLE IF NOT EXISTS [users] ('
-        + '[id] INTEGER PRIMARY KEY AUTOINCREMENT,'
-        + '[firstname] TEXT,'
-        + '[lastname] TEXT,'
-        + '[phone] TEXT,'
-        + '[email] TEXT,'
-        + '[created_at] DATETIME'
-        + ');';
+var ddl = 'CREATE TABLE IF NOT EXISTS [users] ('
+    + '[id] INTEGER PRIMARY KEY AUTOINCREMENT,'
+    + '[firstname] TEXT,'
+    + '[lastname] TEXT,'
+    + '[phone] TEXT,'
+    + '[email] TEXT,'
+    + '[created_at] DATETIME DEFAULT CURRENT_TIMESTAMP'
+    + ');';
 
-    r = db.exec(ddl);
-    utils.log(r)
+r = db.exec(ddl);
+utils.log(r)
+
+if (action === 'init') {
     r = db.exec("INSERT INTO `users` VALUES ('3', 'fname1', 'lname1', '(000)000-0000', 'name1@gmail.com', CURRENT_TIMESTAMP);");
     utils.log(r);
     r = db.exec("INSERT INTO `users` VALUES ('4', 'zengming', 'lname1', '(000)000-0000', 'zengming00@qq.com', CURRENT_TIMESTAMP);");
@@ -40,29 +41,46 @@ if (action === 'init') {
         rows: [],
     }
 
-    var data = count(db, "select count(*) from users");
-    result.total = data[0];
-    result.rows = query(db, "select * from users limit " + offset + "," + page_size + ";");
+    try {
+        var data = count(db, "select count(*) from users");
+        result.total = data[0];
+        result.rows = query(db, "select * from users limit " + offset + "," + page_size + ";");
+    } catch (e) {
+        utils.log(e);
+    }
     output(result);
 
 } else if (action === 'remove_user') {
     var id = utils.toInt(request.formValue('id'), 0);
-    var s = "delete from users where id=$id";
-    /*
-    //删除数据
-    stmt, err = db.Prepare("delete from userinfo where uid=?")
-    checkErr(err)
-    
-    res, err = stmt.Exec(id)
-    checkErr(err)
-    
-    affect, err = res.RowsAffected()
-    checkErr(err)
-    
-    fmt.Println(affect)
-    
-    db.Close()
-    */
+
+    var data = {
+        lastInsertId: 0,
+        rowsAffected: 0,
+        success: false,
+        msg: '',
+    };
+    var r = db.prepare("delete from users where id=?")
+    if (r.err) {
+        throw r.err;
+    }
+    var stmt = r.stmt;
+    r = stmt.exec(id)
+    if (r.err) {
+        throw r.err;
+    }
+    var result = r.result;
+    var r = result.lastInsertId()
+    if (r.err) {
+        throw r.err;
+    }
+    data.lastInsertId = r.id;
+    var r = result.rowsAffected()
+    if (r.err) {
+        throw r.err;
+    }
+    data.rowsAffected = r.rows;
+    data.success = true;
+    output(data);
 
 } else if (action === 'update_user') {
     var id = utils.toInt(request.formValue('id'), 0);
@@ -71,18 +89,34 @@ if (action === 'init') {
     var phone = request.formValue('phone');
     var email = request.formValue('email');
 
-    var s = "update users set firstname='$firstname',lastname='$lastname',phone='$phone',email='$email' where id=$id";
-    // //更新数据
-    // stmt, err = db.Prepare("update userinfo set username=? where uid=?")
-    // checkErr(err)
-
-    // res, err = stmt.Exec("astaxieupdate", id)
-    // checkErr(err)
-
-    // affect, err := res.RowsAffected()
-    // checkErr(err)
-
-    // fmt.Println(affect)
+    var data = {
+        lastInsertId: 0,
+        rowsAffected: 0,
+        success: false,
+        msg: '',
+    };
+    var r = db.prepare("update users set firstname=?,lastname=?,phone=?,email=? where id=?");
+    if (r.err) {
+        throw r.err;
+    }
+    var stmt = r.stmt;
+    r = stmt.exec(firstname, lastname, phone, email, id)
+    if (r.err) {
+        throw r.err;
+    }
+    var result = r.result;
+    var r = result.lastInsertId()
+    if (r.err) {
+        throw r.err;
+    }
+    data.lastInsertId = r.id;
+    var r = result.rowsAffected()
+    if (r.err) {
+        throw r.err;
+    }
+    data.rowsAffected = r.rows;
+    data.success = true;
+    output(data);
 
 } else if (action === 'save_user') {
     var firstname = request.formValue('firstname');
@@ -90,19 +124,34 @@ if (action === 'init') {
     var phone = request.formValue('phone');
     var email = request.formValue('email');
 
-    var s = "insert into users(firstname,lastname,phone,email) values('$firstname','$lastname','$phone','$email')";
-
-    // //插入数据
-    // stmt, err := db.Prepare("INSERT INTO userinfo(username, departname, created) values(?,?,?)")
-    // checkErr(err)
-
-    // res, err := stmt.Exec("astaxie", "研发部门", "2012-12-09")
-    // checkErr(err)
-
-    // id, err := res.LastInsertId()
-    // checkErr(err)
-
-    // fmt.Println(id)
+    var data = {
+        lastInsertId: 0,
+        rowsAffected: 0,
+        success: false,
+        msg: '',
+    };
+    var r = db.prepare("insert into users(firstname,lastname,phone,email) values(?,?,?,?)")
+    if (r.err) {
+        throw r.err;
+    }
+    var stmt = r.stmt;
+    r = stmt.exec(firstname, lastname, phone, email);
+    if (r.err) {
+        throw r.err;
+    }
+    var result = r.result;
+    var r = result.lastInsertId()
+    if (r.err) {
+        throw r.err;
+    }
+    data.lastInsertId = r.id;
+    var r = result.rowsAffected()
+    if (r.err) {
+        throw r.err;
+    }
+    data.rowsAffected = r.rows;
+    data.success = true;
+    output(data);
 }
 
 db.close();
