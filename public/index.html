@@ -1,61 +1,41 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta name="keywords" content="jquery,ui,easy,easyui,web">
 	<meta name="description" content="easyui help you build your web page easily!">
 	<title>jQuery EasyUI CRUD Demo</title>
-	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.net/Public/js/easyui/themes/default/easyui.css">
-	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.net/Public/js/easyui/themes/icon.css">
-	<link rel="stylesheet" type="text/css" href="http://www.jeasyui.net/Public/js/easyui/demo/demo.css">
-	<style type="text/css">
-		#fm{
-			margin:0;
-			padding:10px 30px;
-		}
-		.ftitle{
-			font-size:14px;
-			font-weight:bold;
-			color:#666;
-			padding:5px 0;
-			margin-bottom:10px;
-			border-bottom:1px solid #ccc;
-		}
-		.fitem{
-			margin-bottom:5px;
-		}
-		.fitem label{
-			display:inline-block;
-			width:80px;
-		}
-	</style>
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.min.js"></script>
-	<script type="text/javascript" src="http://www.jeasyui.net/Public/js/easyui/jquery.easyui.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/public/jquery-easyui/themes/default/easyui.css">
+	<link rel="stylesheet" type="text/css" href="/public/jquery-easyui/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="/public/css/index.css">
+	<script type="text/javascript" src="/public/js/jquery.js"></script>
+	<script type="text/javascript" src="/public/jquery-easyui/jquery.easyui.min.js"></script>
 	<script type="text/javascript">
 		var url;
-		function newUser(){
-			$('#dlg').dialog('open').dialog('setTitle','New User');
+		function newUser() {
+			$('#dlg').dialog('open').dialog('setTitle', 'New User');
 			$('#fm').form('clear');
 			url = '/js/db/sqlite3.js?action=save_user';
 		}
-		function editUser(){
+		function editUser() {
 			var row = $('#dg').datagrid('getSelected');
-			if (row){
-				$('#dlg').dialog('open').dialog('setTitle','Edit User');
-				$('#fm').form('load',row);
-				url = '/js/db/sqlite3.js?action=update_user&id='+row.id;
+			if (row) {
+				$('#dlg').dialog('open').dialog('setTitle', 'Edit User');
+				$('#fm').form('load', row);
+				url = '/js/db/sqlite3.js?action=update_user&id=' + row.id;
 			}
 		}
-		function saveUser(){
-			$('#fm').form('submit',{
+		function saveUser() {
+			$('#fm').form('submit', {
 				url: url,
-				onSubmit: function(){
+				onSubmit: function () {
 					return $(this).form('validate');
 				},
-				success: function(result){
+				success: function (result) {
 					var result = JSON.parse(result);
 					console.log(result);
-					if (result.success){
+					if (result.success) {
 						$('#dlg').dialog('close');		// close the dialog
 						$('#dg').datagrid('reload');	// reload the user data
 					} else {
@@ -67,17 +47,17 @@
 				}
 			});
 		}
-		function removeUser(){
+		function removeUser() {
 			var row = $('#dg').datagrid('getSelected');
-			if (row){
-				$.messager.confirm('Confirm','Are you sure you want to remove this user?',function(r){
-					if (r){
+			if (row) {
+				$.messager.confirm('Confirm', 'Are you sure you want to remove this user?', function (r) {
+					if (r) {
 						var data = {
 							action: 'remove_user',
 							id: row.id
 						};
-						$.post('/js/db/sqlite3.js',data,function(result){
-							if (result.success){
+						$.post('/js/db/sqlite3.js', data, function (result) {
+							if (result.success) {
 								$('#dg').datagrid('reload');	// reload the user data
 							} else {
 								$.messager.show({	// show error message
@@ -85,30 +65,50 @@
 									msg: result.msg
 								});
 							}
-						},'json');
+						}, 'json');
 					}
 				});
 			}
 		}
+		function formatter(value, row, index) {
+			console.log(value);
+			return html2Escape(value);
+		}
+		function html2Escape(sHtml) {
+			return sHtml.replace(/[<> &"]/g, function (c) { return { '<': '&lt;', '>': '&gt;', ' ': '&nbsp;', '&': '&amp;', '"': '&quot;' }[c]; });
+		}
+		function escape2Html(str) {
+			var arrEntities = { 'lt': '<', 'gt': '>', 'nbsp': ' ', 'amp': '&', 'quot': '"' };
+			return str.replace(/&(lt|gt|nbsp|amp|quot);/ig, function (all, t) { return arrEntities[t]; });
+		}
+		function removeHtmlTab(tab) {
+			return tab.replace(/<[^<>]+?>/g, '');//删除所有HTML标签
+		}
+		function nbsp2Space(str) {
+			var arrEntities = { 'nbsp': ' ' };
+			return str.replace(/&(nbsp);/ig, function (all, t) { return arrEntities[t] })
+		}
+		function return2Br(str) {
+			return str.replace(/\r?\n/g, "<br />");
+		}
 	</script>
 </head>
+
 <body>
 	<h2>Basic CRUD Application</h2>
 	<div class="demo-info" style="margin-bottom:10px">
 		<div class="demo-tip icon-tip">&nbsp;</div>
 		<div>Click the buttons on datagrid toolbar to do crud actions.</div>
 	</div>
-	
-	<table id="dg" title="My Users" class="easyui-datagrid" style="width:700px;height:500px"
-			url="/js/db/sqlite3.js?action=get_users"
-			toolbar="#toolbar" pagination="true"
-			rownumbers="true" fitColumns="true" singleSelect="true">
+
+	<table id="dg" title="My Users" class="easyui-datagrid" style="width:700px;height:500px" url="/js/db/sqlite3.js?action=get_users"
+	 toolbar="#toolbar" pagination="true" rownumbers="true" fitColumns="true" singleSelect="true">
 		<thead>
 			<tr>
-				<th field="firstname" width="50">First Name</th>
-				<th field="lastname" width="50">Last Name</th>
-				<th field="phone" width="50">Phone</th>
-				<th field="email" width="50">Email</th>
+				<th field="firstname" width="50" formatter="formatter">First Name</th>
+				<th field="lastname" width="50" formatter="formatter">Last Name</th>
+				<th field="phone" width="50" formatter="formatter">Phone</th>
+				<th field="email" width="50" formatter="formatter">Email</th>
 			</tr>
 		</thead>
 	</table>
@@ -117,9 +117,8 @@
 		<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editUser()">Edit User</a>
 		<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="removeUser()">Remove User</a>
 	</div>
-	
-	<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
-			closed="true" buttons="#dlg-buttons">
+
+	<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px" closed="true" buttons="#dlg-buttons">
 		<div class="ftitle">User Information</div>
 		<form id="fm" method="post" novalidate>
 			<div class="fitem">
@@ -145,4 +144,5 @@
 		<a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
 	</div>
 </body>
+
 </html>
