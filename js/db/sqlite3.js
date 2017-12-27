@@ -6,6 +6,7 @@ var types = require('types');
 
 var action = request.formValue('action');
 
+console.log('sqlite3.js');
 
 var r = sql.open("sqlite3", "./js/db/test.db");
 if (r.err) {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -14,19 +15,13 @@ import (
 	_ "github.com/zengming00/go-server-js/lib/db/redis"
 	mhttp "github.com/zengming00/go-server-js/lib/http"
 
+	_ "net/http/pprof"
+
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 )
-
-// go-sqlite3在win32下的问题
-// https://github.com/mattn/go-sqlite3/issues/358
-// 编译mips
-// apt-get install gcc-arm-linux-gnu
-// apt-get install g++-arm-linux-gnu
-// CGO_ENABLED=1 GOOS=linux GOARCH=mips CC=mips-linux-gnu-gcc CXX=mips-linux-gnu-g++ go build -v  -ldflags "-linkmode external -extldflags -static"
 
 var _cwd string
 
@@ -49,6 +44,8 @@ func handErr(err error) {
 }
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
+	// 加上这行后，内存的使用情况好了一些
+	runtime.GC()
 	u := r.URL
 	file := filepath.Join(_cwd, u.Path)
 	if strings.HasPrefix(file, _cwd) {
@@ -90,7 +87,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 
 func server() {
 	s := &_server{
-		registry: new(require.Registry),
+	// registry: new(require.Registry),
 	}
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	http.HandleFunc("/", s.handler)
