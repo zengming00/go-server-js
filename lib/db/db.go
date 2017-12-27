@@ -2,9 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/dop251/goja"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _db struct {
@@ -13,14 +13,25 @@ type _db struct {
 }
 
 func (This *_db) query(call goja.FunctionCall) goja.Value {
-	query := call.Argument(0).String()
+	args := lib.GetAllArgs(&call)
 	retVal := This.runtime.NewObject()
-	rows, err := This.db.Query(query)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+
+	if query, ok := args[0].(string); ok {
+		var rows *sql.Rows
+		var err error
+		if len(args) == 1 {
+			rows, err = This.db.Query(query)
+		} else {
+			rows, err = This.db.Query(query, args[1:]...)
+		}
+		if err != nil {
+			retVal.Set("err", err.Error())
+			return retVal
+		}
+		retVal.Set("rows", NewRows(This.runtime, rows))
+	} else {
+		retVal.Set("err", "p0 is not a string")
 	}
-	retVal.Set("rows", NewRows(This.runtime, rows))
 	return retVal
 }
 
@@ -30,17 +41,26 @@ func (This *_db) close(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_db) exec(call goja.FunctionCall) goja.Value {
-	// todo
-	query := call.Argument(0).String()
+	args := lib.GetAllArgs(&call)
 	retVal := This.runtime.NewObject()
-	r, err := This.db.Exec(query)
-	if err != nil {
-		fmt.Println(err)
-		retVal.Set("err", err.Error())
-		return retVal
+
+	if query, ok := args[0].(string); ok {
+		var result sql.Result
+		var err error
+		if len(args) == 1 {
+			result, err = This.db.Exec(query)
+		} else {
+			result, err = This.db.Exec(query, args[1:]...)
+		}
+		if err != nil {
+			retVal.Set("err", err.Error())
+			return retVal
+		}
+		retVal.Set("result", NewResult(This.runtime, &result))
+	} else {
+		retVal.Set("err", "p0 is not a string")
 	}
-	fmt.Println(r)
-	return nil
+	return retVal
 }
 
 func (This *_db) prepare(call goja.FunctionCall) goja.Value {
@@ -55,6 +75,24 @@ func (This *_db) prepare(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
+func (This *_db) stats(call goja.FunctionCall) goja.Value {
+	st := This.db.Stats()
+	o := This.runtime.NewObject()
+	o.Set("openConnections", st.OpenConnections)
+	return o
+}
+
+func (This *_db) begin(call goja.FunctionCall) goja.Value {
+	retVal := This.runtime.NewObject()
+	tx, err := This.db.Begin()
+	if err != nil {
+		retVal.Set("err", err.Error())
+		return retVal
+	}
+	retVal.Set("tx", NewTx(This.runtime, tx))
+	return retVal
+}
+
 func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	obj := &_db{
 		runtime: runtime,
@@ -65,5 +103,7 @@ func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	o.Set("close", obj.close)
 	o.Set("exec", obj.exec)
 	o.Set("prepare", obj.prepare)
+	o.Set("stats", obj.stats)
+	o.Set("begin", obj.begin)
 	return o
 }

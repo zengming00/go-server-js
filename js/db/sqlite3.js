@@ -6,13 +6,13 @@ var types = require('types');
 
 var action = request.formValue('action');
 
-console.log('sqlite3.js');
-
 var r = sql.open("sqlite3", "./js/db/test.db");
 if (r.err) {
     throw r.err;
 }
 var db = r.db;
+
+console.log('sqlite3.js: %j', db.stats());
 
 var ddl = 'CREATE TABLE IF NOT EXISTS [users] ('
     + '[id] INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -24,7 +24,17 @@ var ddl = 'CREATE TABLE IF NOT EXISTS [users] ('
     + ');';
 
 r = db.exec(ddl);
-utils.log(r)
+if (!r.err) {
+    var result = r.result;
+    var r1 = result.lastInsertId()
+    var r2 = result.rowsAffected()
+    utils.log({
+        lastInsertId: r1.id,
+        rowsAffected: r2.rows,
+    })
+} else {
+    utils.log(r)
+}
 
 if (action === 'init') {
     r = db.exec("INSERT INTO `users` VALUES ('3', 'fname1', 'lname1', '(000)000-0000', 'name1@gmail.com', CURRENT_TIMESTAMP);");

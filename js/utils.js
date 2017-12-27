@@ -1,8 +1,8 @@
 var file = require('file');
 
 exports.log = function (data) {
-  console.log("log:", data);
-  console.log("log json:", JSON.stringify(data, null, 2));
+  console.log("log: %j", data);
+  console.log("log json: ", JSON.stringify(data, null, 2));
 }
 
 exports.fileLoader = function (filePath) {

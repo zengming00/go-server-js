@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dop251/goja"
@@ -26,6 +27,11 @@ func (This *_types) scan(call goja.FunctionCall) goja.Value {
 	args := GetAllArgs(&call)
 	scan(args...)
 	return nil
+}
+
+func (This *_types) err(call goja.FunctionCall) goja.Value {
+	err := errors.New("test err")
+	return This.runtime.ToValue(err)
 }
 
 func (This *_types) newInt(call goja.FunctionCall) goja.Value {
@@ -80,5 +86,6 @@ func init() {
 		o.Set("stringValue", This.stringValue)
 
 		o.Set("scan", This.scan)
+		o.Set("err", This.err)
 	})
 }
