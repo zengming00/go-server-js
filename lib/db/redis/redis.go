@@ -18,7 +18,7 @@ func (This *_redis) stringFunc(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("string", This.runtime.ToValue(str))
+	retVal.Set("string", str)
 	return retVal
 }
 

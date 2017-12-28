@@ -25,11 +25,11 @@ func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
 	rows := This.rows
 	cols, err := rows.Columns()
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 	ct, err := rows.ColumnTypes()
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 
 	arr := make([]interface{}, len(ct))
@@ -40,7 +40,7 @@ func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
 
 	err = rows.Scan(arr...)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 
 	m := make(map[string]interface{})
@@ -66,7 +66,7 @@ func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
 			m[col] = *vv
 		default:
 			fmt.Printf("%T\n", vv)
-			panic(This.runtime.NewGoError(errors.New("unknown type")))
+			panic(errors.New("unknown type"))
 		}
 	}
 	return This.runtime.ToValue(m)
@@ -89,14 +89,14 @@ func (This *_rows) close(call goja.FunctionCall) goja.Value {
 }
 
 func NewRows(runtime *goja.Runtime, rows *sql.Rows) *goja.Object {
-	obj := &_rows{
+	This := &_rows{
 		runtime: runtime,
 		rows:    rows,
 	}
 	o := runtime.NewObject()
-	o.Set("close", obj.close)
-	o.Set("next", obj.next)
-	o.Set("scan", obj.scan)
-	o.Set("err", obj.err)
+	o.Set("close", This.close)
+	o.Set("next", This.next)
+	o.Set("scan", This.scan)
+	o.Set("err", This.err)
 	return o
 }

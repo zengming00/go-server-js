@@ -14,6 +14,8 @@ import (
 	_ "github.com/zengming00/go-server-js/lib/db"
 	_ "github.com/zengming00/go-server-js/lib/db/redis"
 	mhttp "github.com/zengming00/go-server-js/lib/http"
+	_ "github.com/zengming00/go-server-js/lib/image"
+	_ "github.com/zengming00/go-server-js/lib/image/png"
 
 	_ "net/http/pprof"
 
@@ -90,6 +92,7 @@ func server() {
 	// registry: new(require.Registry),
 	}
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
+	// http.Handle("/public", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/", s.handler)
 	err := http.ListenAndServe(":8080", nil)
 	handErr(err)

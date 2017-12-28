@@ -34,12 +34,12 @@ func (This *_result) rowsAffected(call goja.FunctionCall) goja.Value {
 }
 
 func NewResult(runtime *goja.Runtime, result *sql.Result) *goja.Object {
-	obj := &_result{
+	This := &_result{
 		runtime: runtime,
 		result:  result,
 	}
 	o := runtime.NewObject()
-	o.Set("lastInsertId", obj.lastInsertId)
-	o.Set("rowsAffected", obj.rowsAffected)
+	o.Set("lastInsertId", This.lastInsertId)
+	o.Set("rowsAffected", This.rowsAffected)
 	return o
 }

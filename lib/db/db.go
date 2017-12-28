@@ -94,16 +94,16 @@ func (This *_db) begin(call goja.FunctionCall) goja.Value {
 }
 
 func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
-	obj := &_db{
+	This := &_db{
 		runtime: runtime,
 		db:      db,
 	}
 	o := runtime.NewObject()
-	o.Set("query", obj.query)
-	o.Set("close", obj.close)
-	o.Set("exec", obj.exec)
-	o.Set("prepare", obj.prepare)
-	o.Set("stats", obj.stats)
-	o.Set("begin", obj.begin)
+	o.Set("query", This.query)
+	o.Set("close", This.close)
+	o.Set("exec", This.exec)
+	o.Set("prepare", This.prepare)
+	o.Set("stats", This.stats)
+	o.Set("begin", This.begin)
 	return o
 }

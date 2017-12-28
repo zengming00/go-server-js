@@ -25,11 +25,11 @@ func (This *_stmt) exec(call goja.FunctionCall) goja.Value {
 }
 
 func NewStmt(runtime *goja.Runtime, stmt *sql.Stmt) *goja.Object {
-	obj := &_stmt{
+	This := &_stmt{
 		runtime: runtime,
 		stmt:    stmt,
 	}
 	o := runtime.NewObject()
-	o.Set("exec", obj.exec)
+	o.Set("exec", This.exec)
 	return o
 }

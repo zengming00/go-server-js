@@ -18,12 +18,12 @@ func (This *_cookie) stringFunc(call goja.FunctionCall) goja.Value {
 }
 
 func NewCookie(runtime *goja.Runtime, cookie *http.Cookie) *goja.Object {
-	obj := &_cookie{
+	This := &_cookie{
 		runtime: runtime,
 		cookie:  cookie,
 	}
 	o := runtime.NewObject()
-	o.Set("string", obj.stringFunc)
+	o.Set("string", This.stringFunc)
 	o.Set("domain", cookie.Domain)
 	o.Set("expires", lib.NewTime(runtime, &cookie.Expires))
 	o.Set("httpOnly", cookie.HttpOnly)

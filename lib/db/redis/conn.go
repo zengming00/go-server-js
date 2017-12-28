@@ -30,12 +30,12 @@ func (This *_conn) do(call goja.FunctionCall) goja.Value {
 }
 
 func NewConn(runtime *goja.Runtime, conn *redis.Conn) *goja.Object {
-	obj := &_conn{
+	This := &_conn{
 		runtime: runtime,
 		conn:    conn,
 	}
 	o := runtime.NewObject()
-	o.Set("do", obj.do)
-	o.Set("close", obj.close)
+	o.Set("do", This.do)
+	o.Set("close", This.close)
 	return o
 }

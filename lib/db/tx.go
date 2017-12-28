@@ -17,11 +17,11 @@ func (This *_tx) commit(call goja.FunctionCall) goja.Value {
 }
 
 func NewTx(runtime *goja.Runtime, tx *sql.Tx) *goja.Object {
-	obj := &_tx{
+	This := &_tx{
 		runtime: runtime,
 		tx:      tx,
 	}
 	o := runtime.NewObject()
-	o.Set("commit", obj.commit)
+	o.Set("commit", This.commit)
 	return o
 }

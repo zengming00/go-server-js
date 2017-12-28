@@ -24,10 +24,7 @@ func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 
 func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 	err := This.r.ParseForm()
-	if err != nil {
-		return This.runtime.NewGoError(err)
-	}
-	return nil
+	return This.runtime.ToValue(err)
 }
 
 func (This *_req) cookie(call goja.FunctionCall) goja.Value {

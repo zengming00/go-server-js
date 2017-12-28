@@ -24,7 +24,7 @@ func (This *_http) request(call goja.FunctionCall) goja.Value {
 
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 
 	for k, v := range headers {
@@ -39,12 +39,12 @@ func (This *_http) request(call goja.FunctionCall) goja.Value {
 	client.Timeout = time.Duration(timeout) * time.Millisecond
 	res, err := client.Do(req)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 	defer res.Body.Close()
 	datas, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(This.runtime.NewGoError(err))
+		panic(err)
 	}
 
 	headerObj := This.runtime.NewObject()

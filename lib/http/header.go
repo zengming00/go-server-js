@@ -38,14 +38,14 @@ func (This *_header) set(call goja.FunctionCall) goja.Value {
 }
 
 func NewHeader(runtime *goja.Runtime, header *http.Header) *goja.Object {
-	obj := &_header{
+	This := &_header{
 		runtime: runtime,
 		header:  header,
 	}
 	o := runtime.NewObject()
-	o.Set("add", obj.add)
-	o.Set("del", obj.del)
-	o.Set("set", obj.set)
-	o.Set("get", obj.get)
+	o.Set("add", This.add)
+	o.Set("del", This.del)
+	o.Set("set", This.set)
+	o.Set("get", This.get)
 	return o
 }
