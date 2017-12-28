@@ -2,8 +2,7 @@ var image = require('image')
 var os = require('os')
 var png = require('png')
 
-function foo() {
-
+function makeImage() {
   var width = 256
   var height = 256
   var rect = image.rect(0, 0, width, height)
@@ -18,7 +17,10 @@ function foo() {
       img.setRGBA(x, y, r, g, b, a)
     }
   }
+  return img
+}
 
+function writeToFile(img) {
   var r = os.create('image.png')
   if (r.err) {
     console.log(r.err)
@@ -37,11 +39,17 @@ function foo() {
     return
   }
   console.log("done.")
-
 }
 
-foo()
+function writeToResponse(img) {
+  var err = png.encode(response, img)
+  if (err) {
+    console.log(err)
+    return
+  }
+}
 
+writeToResponse(makeImage())
 
 
 

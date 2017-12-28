@@ -1,8 +1,11 @@
 package http
 
-import "github.com/dop251/goja"
-import "net/http"
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/dop251/goja"
+)
 
 type _resp struct {
 	runtime *goja.Runtime
@@ -67,16 +70,20 @@ func (This *_resp) setCookie(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *_resp) getPrototype(call goja.FunctionCall) goja.Value {
+	return This.runtime.ToValue(*This.w)
+}
+
 func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
 	This := &_resp{
 		runtime: runtime,
 		w:       w,
 	}
-
 	o := runtime.NewObject()
 	o.Set("header", This.header)
 	o.Set("write", This.write)
 	o.Set("writeHeader", This.writeHeader)
 	o.Set("setCookie", This.setCookie)
+	o.Set("getPrototype", This.getPrototype)
 	return o
 }
