@@ -1,3 +1,4 @@
 *.exe
 *.db
+go-server-js
 test/
