@@ -2,6 +2,7 @@ package lib
 
 import (
 	"crypto/md5"
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -32,33 +33,53 @@ func (This *_utils) toString(call goja.FunctionCall) goja.Value {
 	if bts, ok := data.([]byte); ok {
 		return This.runtime.ToValue(string(bts))
 	}
-	panic(This.runtime.NewTypeError("toString data is not a byte array"))
+	panic(This.runtime.NewTypeError("data is not a byte array"))
 }
 
 func (This *_utils) toBase64(call goja.FunctionCall) goja.Value {
-	data := call.Argument(0).Export()
-	if bts, ok := data.([]byte); ok {
-		str := base64.StdEncoding.EncodeToString(bts)
-		return This.runtime.ToValue(str)
-	} else if s, ok := data.(string); ok {
-		str := base64.StdEncoding.EncodeToString([]byte(s))
-		return This.runtime.ToValue(str)
+	p0 := call.Argument(0).Export()
+	var str string
+	switch data := p0.(type) {
+	case []byte:
+		str = base64.StdEncoding.EncodeToString(data)
+	case string:
+		str = base64.StdEncoding.EncodeToString([]byte(data))
+	default:
+		panic(This.runtime.NewTypeError("data is not a byte array or string"))
 	}
-	panic(This.runtime.NewTypeError("toBase64 data is not a byte array or string"))
+	return This.runtime.ToValue(str)
 }
 
 func (This *_utils) md5(call goja.FunctionCall) goja.Value {
-	data := call.Argument(0).Export()
-	if bts, ok := data.([]byte); ok {
-		r := md5.Sum(bts)
-		str := hex.EncodeToString(r[:])
-		return This.runtime.ToValue(str)
-	} else if s, ok := data.(string); ok {
-		r := md5.Sum([]byte(s))
-		str := hex.EncodeToString(r[:])
-		return This.runtime.ToValue(str)
+	p0 := call.Argument(0).Export()
+	var r []byte
+	switch data := p0.(type) {
+	case []byte:
+		tmp := md5.Sum(data)
+		r = tmp[:]
+	case string:
+		tmp := md5.Sum([]byte(data))
+		r = tmp[:]
+	default:
+		panic(This.runtime.NewTypeError("data is not a byte array or string"))
 	}
-	panic(This.runtime.NewTypeError("md5 data is not a byte array or string"))
+	return This.runtime.ToValue(hex.EncodeToString(r))
+}
+
+func (This *_utils) sha1(call goja.FunctionCall) goja.Value {
+	p0 := call.Argument(0).Export()
+	var r []byte
+	switch data := p0.(type) {
+	case []byte:
+		tmp := sha1.Sum(data)
+		r = tmp[:]
+	case string:
+		tmp := sha1.Sum([]byte(data))
+		r = tmp[:]
+	default:
+		panic(This.runtime.NewTypeError("data is not a byte array or string"))
+	}
+	return This.runtime.ToValue(hex.EncodeToString(r))
 }
 
 func init() {
@@ -71,5 +92,6 @@ func init() {
 		o.Set("toString", This.toString)
 		o.Set("toBase64", This.toBase64)
 		o.Set("md5", This.md5)
+		o.Set("sha1", This.sha1)
 	})
 }

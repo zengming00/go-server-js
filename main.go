@@ -36,10 +36,6 @@ type _server struct {
 func init() {
 	var err error
 	_cwd, err = os.Getwd()
-	handErr(err)
-}
-
-func handErr(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -70,8 +66,15 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			ret, err := runFile(file, runtime, registry)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
-				panic(err)
+				switch err := err.(type) {
+				case *goja.Exception:
+					fmt.Println("*goja.Exception:", err.String())
+				case *goja.InterruptedError:
+					fmt.Println("*goja.InterruptedError:", err.String())
+				default:
+					fmt.Println("default:", err)
+				}
+				return
 			}
 			// if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
 			// 	w.WriteHeader(http.StatusOK)
@@ -84,7 +87,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(http.StatusNotFound)
 }
 
 func server() {
@@ -95,32 +98,33 @@ func server() {
 	// http.Handle("/public", http.FileServer(http.Dir("./public")))
 	http.HandleFunc("/", s.handler)
 	err := http.ListenAndServe(":8080", nil)
-	handErr(err)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
 	if len(os.Args) == 2 {
 		filename := os.Args[1]
 		start := time.Now()
-		// this can be shared by multiple runtimes
+
 		registry := new(require.Registry)
-		for i := 0; i < 1000; i++ {
-			runtime := goja.New()
-			r, err := runFile(filename, runtime, registry)
-			if err != nil {
-				switch err := err.(type) {
-				case *goja.Exception:
-					fmt.Println(err.String())
-				case *goja.InterruptedError:
-					fmt.Println(err.String())
-				default:
-					fmt.Println(err)
-				}
-				os.Exit(64)
+		runtime := goja.New()
+		r, err := runFile(filename, runtime, registry)
+		if err != nil {
+			switch err := err.(type) {
+			case *goja.Exception:
+				fmt.Println("*goja.Exception:", err.String())
+			case *goja.InterruptedError:
+				fmt.Println("*goja.InterruptedError:", err.String())
+			default:
+				fmt.Println("default:", err)
 			}
-			fmt.Println(*r)
+			os.Exit(64)
 		}
+		fmt.Println("result:", *r)
 		fmt.Printf("done (%s)", time.Since(start))
+		return
 	}
 	server()
 }

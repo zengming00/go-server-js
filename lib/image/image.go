@@ -1,7 +1,6 @@
 package image
 
 import (
-	"errors"
 	"image"
 
 	"github.com/dop251/goja"
@@ -28,7 +27,7 @@ func (This *_image) newRGBA(call goja.FunctionCall) goja.Value {
 		rgba := image.NewRGBA(*rect)
 		return This.runtime.ToValue(NewRGBA(This.runtime, rgba))
 	}
-	panic(errors.New("p0 is not a Rectangle type"))
+	panic(This.runtime.NewTypeError("p0 is not a Rectangle type"))
 }
 
 func init() {

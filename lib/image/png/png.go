@@ -1,7 +1,6 @@
 package png
 
 import (
-	"errors"
 	"image"
 	"image/png"
 	"io"
@@ -28,9 +27,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	w, ok := wo.Export().(io.Writer)
 	if !ok {
-		panic(errors.New("p0 can not convert to *io.Writer"))
-		// 这种方式无法知道在哪个go文件出错
-		// panic(This.runtime.NewGoError(errors.New("p0 can not convert to *io.Writer")))
+		panic(This.runtime.NewTypeError("p0 can not convert to *io.Writer"))
 	}
 
 	mproto, ok := goja.AssertFunction(p1.Get("getPrototype"))
@@ -43,7 +40,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	m, ok := mo.Export().(image.Image)
 	if !ok {
-		panic(errors.New("p0 can not convert to *image.Image"))
+		panic(This.runtime.NewTypeError("p0 can not convert to *image.Image"))
 	}
 	err = png.Encode(w, m)
 	return This.runtime.ToValue(err)

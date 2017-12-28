@@ -31,7 +31,7 @@ func (This *_types) scan(call goja.FunctionCall) goja.Value {
 
 func (This *_types) err(call goja.FunctionCall) goja.Value {
 	err := errors.New("test err")
-	return This.runtime.ToValue(err)
+	return This.runtime.ToValue(err.Error())
 }
 
 func (This *_types) newInt(call goja.FunctionCall) goja.Value {
@@ -43,7 +43,7 @@ func (This *_types) intValue(call goja.FunctionCall) goja.Value {
 	if vv, ok := v.(*int); ok {
 		return This.runtime.ToValue(*vv)
 	}
-	panic(This.runtime.NewTypeError(fmt.Errorf("%T can not convert to int value", v)))
+	panic(This.runtime.NewTypeError("%T can not convert to int value", v))
 }
 
 func (This *_types) newBool(call goja.FunctionCall) goja.Value {
@@ -55,7 +55,7 @@ func (This *_types) boolValue(call goja.FunctionCall) goja.Value {
 	if vv, ok := v.(*bool); ok {
 		return This.runtime.ToValue(*vv)
 	}
-	panic(This.runtime.NewTypeError(fmt.Errorf("%T can not convert to bool value", v)))
+	panic(This.runtime.NewTypeError("%T can not convert to bool value", v))
 }
 
 func (This *_types) newString(call goja.FunctionCall) goja.Value {
@@ -67,7 +67,7 @@ func (This *_types) stringValue(call goja.FunctionCall) goja.Value {
 	if vv, ok := v.(*string); ok {
 		return This.runtime.ToValue(*vv)
 	}
-	panic(This.runtime.NewTypeError(fmt.Errorf("%T can not convert to string value", v)))
+	panic(This.runtime.NewTypeError("%T can not convert to string value", v))
 }
 
 func init() {
