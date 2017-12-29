@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -13,9 +14,10 @@ import (
 	_ "github.com/zengming00/go-server-js/lib"
 	_ "github.com/zengming00/go-server-js/lib/db"
 	_ "github.com/zengming00/go-server-js/lib/db/redis"
-	mhttp "github.com/zengming00/go-server-js/lib/http"
 	_ "github.com/zengming00/go-server-js/lib/image"
 	_ "github.com/zengming00/go-server-js/lib/image/png"
+	mhttp "github.com/zengming00/go-server-js/lib/net/http"
+	_ "github.com/zengming00/go-server-js/lib/net/url"
 
 	_ "net/http/pprof"
 
@@ -30,6 +32,7 @@ var _cwd string
 type _server struct {
 	runtime          *goja.Runtime
 	registry         *require.Registry
+	config           *config
 	writeResultValue bool
 }
 
@@ -41,11 +44,23 @@ func init() {
 	}
 }
 
+type config struct {
+	IndexFile string `json:"indexFile"`
+	Port      string `json:"port"`
+}
+
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 	// 加上这行后，内存的使用情况好了一些
-	runtime.GC()
+	defer runtime.GC()
+
 	u := r.URL
-	file := filepath.Join(_cwd, u.Path)
+
+	file := u.Path
+	if file == "/" {
+		file = This.config.IndexFile
+	}
+	file = filepath.Join(_cwd, file)
+
 	if strings.HasPrefix(file, _cwd) {
 		ext := filepath.Ext(file)
 		if ext == ".js" {
@@ -92,12 +107,20 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 
 func server() {
 	s := &_server{
-	// registry: new(require.Registry),
+		// registry: new(require.Registry),
+		config: &config{
+			IndexFile: "/js/index.js",
+			Port:      "8080",
+		},
 	}
+
+	initConfig("config.json", s.config)
+
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
-	// http.Handle("/public", http.FileServer(http.Dir("./public")))
+	// http.Handle("/public", s.fileServer)
 	http.HandleFunc("/", s.handler)
-	err := http.ListenAndServe(":8080", nil)
+
+	err := http.ListenAndServe(":"+s.config.Port, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -152,4 +175,32 @@ func runFile(filename string, runtime *goja.Runtime, registry *require.Registry)
 		return nil, err
 	}
 	return &result, nil
+}
+
+func initConfig(path string, v interface{}) {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			bts, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				panic(err)
+			}
+			err = ioutil.WriteFile(path, bts, 0666)
+			if err != nil {
+				panic(err)
+			}
+			return
+		}
+		panic(err)
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	dec := json.NewDecoder(file)
+	err = dec.Decode(v)
+	if err != nil {
+		panic(err)
+	}
 }

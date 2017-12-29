@@ -1,0 +1,1 @@
+go build -tags=sqlite3 -v
