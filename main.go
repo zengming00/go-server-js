@@ -74,9 +74,13 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 				registry = new(require.Registry)
 			}
 			response := mhttp.NewResponse(runtime, &w)
-			request := mhttp.NewRequest(runtime, r)
 			runtime.Set("response", response)
+
+			request := mhttp.NewRequest(runtime, r)
 			runtime.Set("request", request)
+
+			cache := NewCache(runtime)
+			runtime.Set("cache", cache)
 
 			ret, err := runFile(file, runtime, registry)
 			if err != nil {
