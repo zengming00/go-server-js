@@ -28,6 +28,10 @@ func (This *_utils) print(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *_utils) panicFunc(call goja.FunctionCall) goja.Value {
+	panic(call.Argument(0).String())
+}
+
 func (This *_utils) toString(call goja.FunctionCall) goja.Value {
 	data := call.Argument(0).Export()
 	if bts, ok := data.([]byte); ok {
@@ -93,5 +97,6 @@ func init() {
 		o.Set("toBase64", This.toBase64)
 		o.Set("md5", This.md5)
 		o.Set("sha1", This.sha1)
+		o.Set("panic", This.panicFunc)
 	})
 }

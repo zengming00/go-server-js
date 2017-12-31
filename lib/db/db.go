@@ -28,7 +28,7 @@ func (This *_db) query(call goja.FunctionCall) goja.Value {
 			retVal.Set("err", err.Error())
 			return retVal
 		}
-		retVal.Set("rows", NewRows(This.runtime, rows))
+		retVal.Set("value", NewRows(This.runtime, rows))
 	} else {
 		retVal.Set("err", "p0 is not a string")
 	}
@@ -56,7 +56,7 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 			retVal.Set("err", err.Error())
 			return retVal
 		}
-		retVal.Set("result", NewResult(This.runtime, &result))
+		retVal.Set("value", NewResult(This.runtime, &result))
 	} else {
 		retVal.Set("err", "p0 is not a string")
 	}
@@ -71,7 +71,7 @@ func (This *_db) prepare(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("stmt", NewStmt(This.runtime, stmt))
+	retVal.Set("value", NewStmt(This.runtime, stmt))
 	return retVal
 }
 
@@ -89,7 +89,7 @@ func (This *_db) begin(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("tx", NewTx(This.runtime, tx))
+	retVal.Set("value", NewTx(This.runtime, tx))
 	return retVal
 }
 

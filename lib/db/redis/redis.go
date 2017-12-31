@@ -18,7 +18,7 @@ func (This *_redis) stringFunc(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("string", str)
+	retVal.Set("value", str)
 	return retVal
 }
 
@@ -31,7 +31,7 @@ func (This *_redis) dial(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("conn", NewConn(This.runtime, &conn))
+	retVal.Set("value", NewConn(This.runtime, &conn))
 	return retVal
 }
 

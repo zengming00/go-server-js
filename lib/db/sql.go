@@ -20,7 +20,7 @@ func (This *_sql) open(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("db", NewDB(This.runtime, db))
+	retVal.Set("value", NewDB(This.runtime, db))
 	return retVal
 }
 

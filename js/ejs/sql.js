@@ -7,42 +7,37 @@ var myUtils = require('./js/utils.js');
 
 
 
-try {
-  // var db = sql.new("mysql", "root:root@/test2?parseTime=true&loc=" + url.queryEscape("Asia/Shanghai"))
-  // var db = sql.new("mysql", "root:root@/test2")
-  var r = sql.open("sqlite3", "./js/db/test.db")
-  if (r.err) {
-    throw r.err;
-  }
-
-  var db = r.db;
-  r = db.query("select * from users")
-  if (r.err) {
-    throw r.err;
-  }
-
-  var rows = r.rows;
-  var rowDatas = [];
-  while (rows.next()) {
-    var data = rows.scan();
-    rowDatas.push(data);
-  }
-
-  var err = rows.err()
-  if (err) {
-    log(err)
-    throw err;
-  }
-  db.close()
-  log(rowDatas)
-  var path = './js/ejs/sql.ejs';
-  var content = myUtils.fileLoader(path);
-  var func = ejs.compile(content, { filename: path });
-  var html = func({ datas: rowDatas });
-  response.write(html)
-} catch (e) {
-  log(e)
+// var db = sql.new("mysql", "root:root@/test2?parseTime=true&loc=" + url.queryEscape("Asia/Shanghai"))
+// var db = sql.new("mysql", "root:root@/test2")
+var r = sql.open("sqlite3", "./js/db/test.db")
+if (r.err) {
+  throw r.err;
 }
+
+var db = r.value;
+r = db.query("select * from users")
+if (r.err) {
+  throw r.err;
+}
+
+var rows = r.value;
+var rowDatas = [];
+while (rows.next()) {
+  var data = rows.getData();
+  rowDatas.push(data);
+}
+
+var err = rows.err()
+if (err) {
+  throw err;
+}
+db.close()
+log(rowDatas)
+var path = './js/ejs/sql.ejs';
+var content = myUtils.fileLoader(path);
+var func = ejs.compile(content, { filename: path });
+var html = func({ datas: rowDatas });
+response.write(html)
 
 function log(data) {
   console.log("log:", data)

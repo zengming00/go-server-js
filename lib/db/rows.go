@@ -21,7 +21,7 @@ func (This *_rows) err(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(err)
 }
 
-func (This *_rows) scan2(call goja.FunctionCall) goja.Value {
+func (This *_rows) getData(call goja.FunctionCall) goja.Value {
 	rows := This.rows
 	cols, err := rows.Columns()
 	if err != nil {
@@ -97,6 +97,7 @@ func NewRows(runtime *goja.Runtime, rows *sql.Rows) *goja.Object {
 	o.Set("close", This.close)
 	o.Set("next", This.next)
 	o.Set("scan", This.scan)
+	o.Set("getData", This.getData)
 	o.Set("err", This.err)
 	return o
 }

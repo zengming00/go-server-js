@@ -18,7 +18,7 @@ func (This *_result) lastInsertId(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("id", id)
+	retVal.Set("value", id)
 	return retVal
 }
 
@@ -29,7 +29,7 @@ func (This *_result) rowsAffected(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("rows", rows)
+	retVal.Set("value", rows)
 	return retVal
 }
 

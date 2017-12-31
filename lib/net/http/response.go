@@ -51,7 +51,7 @@ func (This *_resp) write(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("n", n)
+	retVal.Set("value", n)
 	return retVal
 }
 

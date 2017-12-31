@@ -20,7 +20,7 @@ func (This *_stmt) exec(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("result", NewResult(This.runtime, &result))
+	retVal.Set("value", NewResult(This.runtime, &result))
 	return retVal
 }
 

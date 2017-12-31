@@ -10,7 +10,7 @@ exports.fileLoader = function (filePath) {
   if (r.err) {
     throw err;
   }
-  return utils.toString(r.data);
+  return utils.toString(r.value);
 }
 
 exports.toInt = function (v, def) {

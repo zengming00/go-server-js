@@ -10,7 +10,7 @@ var r = sql.open("sqlite3", "./js/db/test.db");
 if (r.err) {
     throw r.err;
 }
-var db = r.db;
+var db = r.value;
 
 console.log('sqlite3.js: %j', db.stats());
 
@@ -25,16 +25,15 @@ var ddl = 'CREATE TABLE IF NOT EXISTS [users] ('
 
 r = db.exec(ddl);
 if (!r.err) {
-    var result = r.result;
+    var result = r.value;
     var r1 = result.lastInsertId()
     var r2 = result.rowsAffected()
     utils.log({
         lastInsertId: r1.id,
         rowsAffected: r2.rows,
     })
-} else {
-    utils.log(r)
 }
+utils.log(r)
 
 if (action === 'init') {
     r = db.exec("INSERT INTO `users` VALUES ('3', 'fname1', 'lname1', '(000)000-0000', 'name1@gmail.com', CURRENT_TIMESTAMP);");
@@ -74,12 +73,12 @@ if (action === 'init') {
     if (r.err) {
         throw r.err;
     }
-    var stmt = r.stmt;
+    var stmt = r.value;
     r = stmt.exec(id)
     if (r.err) {
         throw r.err;
     }
-    var result = r.result;
+    var result = r.value;
     var r = result.lastInsertId()
     if (r.err) {
         throw r.err;
@@ -110,12 +109,12 @@ if (action === 'init') {
     if (r.err) {
         throw r.err;
     }
-    var stmt = r.stmt;
+    var stmt = r.value;
     r = stmt.exec(firstname, lastname, phone, email, id)
     if (r.err) {
         throw r.err;
     }
-    var result = r.result;
+    var result = r.value;
     var r = result.lastInsertId()
     if (r.err) {
         throw r.err;
@@ -125,7 +124,7 @@ if (action === 'init') {
     if (r.err) {
         throw r.err;
     }
-    data.rowsAffected = r.rows;
+    data.rowsAffected = r.value;
     data.success = true;
     output(data);
 
@@ -145,12 +144,12 @@ if (action === 'init') {
     if (r.err) {
         throw r.err;
     }
-    var stmt = r.stmt;
+    var stmt = r.value;
     r = stmt.exec(firstname, lastname, phone, email);
     if (r.err) {
         throw r.err;
     }
-    var result = r.result;
+    var result = r.value;
     var r = result.lastInsertId()
     if (r.err) {
         throw r.err;
@@ -160,7 +159,7 @@ if (action === 'init') {
     if (r.err) {
         throw r.err;
     }
-    data.rowsAffected = r.rows;
+    data.rowsAffected = r.value;
     data.success = true;
     output(data);
 }
@@ -177,20 +176,21 @@ function count(db, msql) {
     if (r.err) {
         throw r.err;
     }
-    while (r.rows.next()) {
+    var rows = r.value;
+    while (rows.next()) {
         var n = types.newInt();
-        var err = r.rows.scan(n)
+        var err = rows.scan(n)
         if (err) {
             throw err;
         }
         n = types.intValue(n);
         ret.push(n);
     }
-    var err = r.rows.err();
+    var err = rows.err();
     if (err) {
         throw err;
     }
-    err = r.rows.close();
+    err = rows.close();
     if (err) {
         throw err;
     }
@@ -203,7 +203,8 @@ function query(db, msql) {
     if (r.err) {
         throw r.err;
     }
-    while (r.rows.next()) {
+    var rows = r.value;
+    while (rows.next()) {
         var id = types.newInt();
         var firstname = types.newString();
         var lastname = types.newString();
@@ -211,7 +212,7 @@ function query(db, msql) {
         var email = types.newString();
         var created_at = types.newString();
 
-        var err = r.rows.scan(id, firstname, lastname, phone, email, created_at);
+        var err = rows.scan(id, firstname, lastname, phone, email, created_at);
         if (err) {
             throw err;
         }
@@ -225,11 +226,11 @@ function query(db, msql) {
             created_at: types.stringValue(created_at),
         });
     }
-    var err = r.rows.err();
+    var err = rows.err();
     if (err) {
         throw err;
     }
-    err = r.rows.close();
+    err = rows.close();
     if (err) {
         throw err;
     }

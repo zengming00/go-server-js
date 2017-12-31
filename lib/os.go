@@ -20,7 +20,7 @@ func (This *_os) create(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("file", NewFile(This.runtime, file))
+	retVal.Set("value", NewFile(This.runtime, file))
 	return retVal
 }
 

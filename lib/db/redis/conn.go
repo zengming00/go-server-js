@@ -25,7 +25,7 @@ func (This *_conn) do(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("reply", This.runtime.ToValue(reply))
+	retVal.Set("value", This.runtime.ToValue(reply))
 	return retVal
 }
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -124,6 +125,7 @@ func server() {
 	// http.Handle("/public", s.fileServer)
 	http.HandleFunc("/", s.handler)
 
+	log.Println("server running on " + s.config.Port)
 	err := http.ListenAndServe(":"+s.config.Port, nil)
 	if err != nil {
 		panic(err)

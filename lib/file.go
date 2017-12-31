@@ -34,7 +34,7 @@ func (This *_file) read(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("data", data)
+	retVal.Set("value", data)
 	return retVal
 }
 
@@ -56,7 +56,7 @@ func (This *_file) writeString(call goja.FunctionCall) goja.Value {
 		retVal.Set("err", err.Error())
 		return retVal
 	}
-	retVal.Set("n", n)
+	retVal.Set("value", n)
 	return retVal
 }
 

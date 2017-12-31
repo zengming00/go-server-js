@@ -35,7 +35,7 @@ func (This *_req) cookie(call goja.FunctionCall) goja.Value {
 	if err != nil {
 		retVal.Set("err", err.Error())
 	} else {
-		retVal.Set("cookie", NewCookie(This.runtime, c))
+		retVal.Set("value", NewCookie(This.runtime, c))
 	}
 	return retVal
 }
