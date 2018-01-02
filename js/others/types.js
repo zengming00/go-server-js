@@ -1,0 +1,5 @@
+var types = require('types')
+console.log(types.err())
+console.log("%j", types.err())
+console.log(JSON.stringify(types.err()))
+console.log(types.err2())

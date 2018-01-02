@@ -13,7 +13,10 @@ type _conn struct {
 
 func (This *_conn) close(call goja.FunctionCall) goja.Value {
 	err := (*This.conn).Close()
-	return This.runtime.ToValue(err)
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
 }
 
 func (This *_conn) do(call goja.FunctionCall) goja.Value {

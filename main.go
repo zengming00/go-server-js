@@ -37,17 +37,10 @@ type _server struct {
 	writeResultValue bool
 }
 
-func init() {
-	var err error
-	_cwd, err = os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-}
-
 type config struct {
-	IndexFile string `json:"indexFile"`
-	Port      string `json:"port"`
+	IndexFile string
+	Port      string
+	WorkDir   *string
 }
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +104,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func server() {
+	var err error
 	s := &_server{
 		// registry: new(require.Registry),
 		config: &config{
@@ -121,12 +115,24 @@ func server() {
 
 	initConfig("config.json", s.config)
 
+	if s.config.WorkDir != nil {
+		err := os.Chdir(*s.config.WorkDir)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_cwd, err = os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	// http.Handle("/public", s.fileServer)
 	http.HandleFunc("/", s.handler)
 
 	log.Println("server running on " + s.config.Port)
-	err := http.ListenAndServe(":"+s.config.Port, nil)
+	err = http.ListenAndServe(":"+s.config.Port, nil)
 	if err != nil {
 		panic(err)
 	}

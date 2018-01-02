@@ -19,7 +19,7 @@ func (This *_file) write(call goja.FunctionCall) goja.Value {
 	if bts, ok := data.([]byte); ok {
 		err := ioutil.WriteFile(filename, bts, 0666)
 		if err != nil {
-			return This.runtime.ToValue(err)
+			return This.runtime.ToValue(err.Error())
 		}
 		return nil
 	}
@@ -40,7 +40,10 @@ func (This *_file) read(call goja.FunctionCall) goja.Value {
 
 func (This *_file) close(call goja.FunctionCall) goja.Value {
 	err := This.file.Close()
-	return This.runtime.ToValue(err)
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
 }
 
 func (This *_file) getPrototype(call goja.FunctionCall) goja.Value {

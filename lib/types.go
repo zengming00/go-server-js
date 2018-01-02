@@ -31,6 +31,12 @@ func (This *_types) scan(call goja.FunctionCall) goja.Value {
 
 func (This *_types) err(call goja.FunctionCall) goja.Value {
 	err := errors.New("test err")
+	// 无法在js中使用
+	return This.runtime.ToValue(err)
+}
+
+func (This *_types) err2(call goja.FunctionCall) goja.Value {
+	err := errors.New("test err2")
 	return This.runtime.ToValue(err.Error())
 }
 
@@ -87,5 +93,6 @@ func init() {
 
 		o.Set("scan", This.scan)
 		o.Set("err", This.err)
+		o.Set("err2", This.err2)
 	})
 }

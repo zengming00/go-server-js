@@ -43,7 +43,10 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 		panic(This.runtime.NewTypeError("p0 can not convert to *image.Image"))
 	}
 	err = png.Encode(w, m)
-	return This.runtime.ToValue(err)
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
 }
 
 func init() {

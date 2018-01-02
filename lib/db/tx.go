@@ -13,7 +13,10 @@ type _tx struct {
 
 func (This *_tx) commit(call goja.FunctionCall) goja.Value {
 	err := This.tx.Commit()
-	return This.runtime.ToValue(err)
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
 }
 
 func NewTx(runtime *goja.Runtime, tx *sql.Tx) *goja.Object {

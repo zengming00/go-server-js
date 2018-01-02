@@ -25,7 +25,10 @@ func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 
 func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 	err := This.r.ParseForm()
-	return This.runtime.ToValue(err)
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
 }
 
 func (This *_req) getHeader(call goja.FunctionCall) goja.Value {

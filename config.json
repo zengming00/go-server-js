@@ -1,4 +1,5 @@
 {
-  "indexFile": "/js/index.js",
-  "port": "8080"
+  "IndexFile": "/js/index.js",
+  "Port": "8080",
+  "WorkDir": null
 }
