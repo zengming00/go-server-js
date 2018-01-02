@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dop251/goja"
+	"github.com/zengming00/go-server-js/lib/net/url"
 )
 
 type _req struct {
@@ -25,6 +26,12 @@ func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 	err := This.r.ParseForm()
 	return This.runtime.ToValue(err)
+}
+
+func (This *_req) getHeader(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	value := This.r.Header.Get(key)
+	return This.runtime.ToValue(value)
 }
 
 func (This *_req) cookie(call goja.FunctionCall) goja.Value {
@@ -49,10 +56,13 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o := runtime.NewObject()
 	o.Set("contentLength", r.ContentLength)
 	o.Set("method", r.Method)
-	o.Set("header", NewHeader(runtime, &r.Header))
 	o.Set("host", r.Host)
-	o.Set("requestURI", r.RequestURI)
+	o.Set("header", NewHeader(runtime, &r.Header))
+	o.Set("uri", r.RequestURI)
+	o.Set("remoteAddr", r.RemoteAddr)
+	o.Set("form", url.NewValues(runtime, &r.Form))
 
+	o.Set("getHeader", This.getHeader)
 	o.Set("formValue", This.formValue)
 	o.Set("userAgent", This.userAgent)
 	o.Set("parseForm", This.parseForm)
