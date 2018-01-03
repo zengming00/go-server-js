@@ -29,6 +29,7 @@ import (
 )
 
 var _cwd string
+var sessionMgr *SessionMgr
 
 type _server struct {
 	runtime          *goja.Runtime
@@ -38,14 +39,16 @@ type _server struct {
 }
 
 type config struct {
-	IndexFile string
-	Port      string
-	WorkDir   *string
+	IndexFile             string
+	Port                  string
+	WorkDir               *string
+	SessionMaxLifeTimeSec int64
 }
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 	// 加上这行后，内存的使用情况好了一些
-	defer runtime.GC()
+	runtime.GC()
+	// defer runtime.GC()
 
 	u := r.URL
 
@@ -110,6 +113,7 @@ func server() {
 		config: &config{
 			IndexFile: "/js/index.js",
 			Port:      "8080",
+			SessionMaxLifeTimeSec: 60 * 15,
 		},
 	}
 
@@ -126,6 +130,8 @@ func server() {
 	if err != nil {
 		panic(err)
 	}
+
+	sessionMgr = NewSessionMgr("sid", s.config.SessionMaxLifeTimeSec)
 
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	// http.Handle("/public", s.fileServer)

@@ -50,6 +50,15 @@ func (This *_req) cookie(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
+func (This *_req) cookies(call goja.FunctionCall) goja.Value {
+	cks := This.r.Cookies()
+	arr := make([]*goja.Object, len(cks))
+	for i, v := range cks {
+		arr[i] = NewCookie(This.runtime, v)
+	}
+	return This.runtime.ToValue(arr)
+}
+
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	This := &_req{
 		runtime: runtime,
@@ -70,6 +79,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o.Set("userAgent", This.userAgent)
 	o.Set("parseForm", This.parseForm)
 	o.Set("cookie", This.cookie)
+	o.Set("cookies", This.cookies)
 
 	return o
 }

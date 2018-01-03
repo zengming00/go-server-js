@@ -66,6 +66,9 @@ func (This *_resp) setCookie(call goja.FunctionCall) goja.Value {
 	cookie := &http.Cookie{}
 	cookie.Name = call.Argument(0).String()
 	cookie.Value = call.Argument(1).String()
+	cookie.Path = call.Argument(2).String()
+	cookie.MaxAge = int(call.Argument(3).ToInteger())
+	cookie.HttpOnly = call.Argument(4).ToBoolean()
 	http.SetCookie(*This.w, cookie)
 	return nil
 }

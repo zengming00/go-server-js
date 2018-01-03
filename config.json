@@ -1,5 +1,6 @@
 {
   "IndexFile": "/js/index.js",
   "Port": "8080",
-  "WorkDir": null
+  "WorkDir": null,
+  "SessionMaxLifeTimeSec": 900
 }
