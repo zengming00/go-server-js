@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/dop251/goja"
 )
 
 type Session struct {
@@ -35,23 +37,24 @@ func (mgr *SessionMgr) StartSession(w http.ResponseWriter, r *http.Request) stri
 	mgr.mLock.Lock()
 	defer mgr.mLock.Unlock()
 
+	var sessionID string
 	cookie, err := r.Cookie(mgr.mCookieName)
 	if err == nil {
-		mgr.mLock.Lock()
-		defer mgr.mLock.Unlock()
-
-		sessionID := cookie.Value
-		if session, ok := mgr.mSessions[sessionID]; ok {
+		if session, ok := mgr.mSessions[cookie.Value]; ok {
 			session.mLastTimeAccessed = time.Now()
-			return sessionID
+			sessionID = cookie.Value
 		}
 	}
-	newSessionID := url.QueryEscape(mgr.NewSessionID())
-	session := &Session{mSessionID: newSessionID, mLastTimeAccessed: time.Now(), mValues: make(map[string]interface{})}
-	mgr.mSessions[newSessionID] = session
-	cookie = &http.Cookie{Name: mgr.mCookieName, Value: newSessionID, Path: "/", HttpOnly: true, MaxAge: int(mgr.mMaxLifeTimeSec)}
+
+	if sessionID == "" {
+		sessionID = url.QueryEscape(mgr.NewSessionID())
+		session := &Session{mSessionID: sessionID, mLastTimeAccessed: time.Now(), mValues: make(map[string]interface{})}
+		mgr.mSessions[sessionID] = session
+	}
+
+	cookie = &http.Cookie{Name: mgr.mCookieName, Value: sessionID, Path: "/", HttpOnly: true, MaxAge: int(mgr.mMaxLifeTimeSec)}
 	http.SetCookie(w, cookie)
-	return newSessionID
+	return sessionID
 }
 
 func (mgr *SessionMgr) EndSession(w http.ResponseWriter, r *http.Request) {
@@ -85,14 +88,15 @@ func (mgr *SessionMgr) SetSessionVal(sessionID string, key string, value interfa
 	}
 }
 
-func (mgr *SessionMgr) GetSessionVal(sessionID string, key string) (value interface{}, ok bool) {
+func (mgr *SessionMgr) GetSessionVal(sessionID string, key string) (interface{}, bool) {
 	mgr.mLock.RLock()
 	defer mgr.mLock.RUnlock()
 
 	if session, ok := mgr.mSessions[sessionID]; ok {
-		value, ok = session.mValues[key]
+		value, ok := session.mValues[key]
+		return value, ok
 	}
-	return
+	return nil, false
 }
 
 func (mgr *SessionMgr) GetSessionIDList() []string {
@@ -121,10 +125,73 @@ func (mgr *SessionMgr) GC() {
 }
 
 func (mgr *SessionMgr) NewSessionID() string {
+	// todo 为了更加安全，sessionID应该考虑加上验证
 	b := make([]byte, 32)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
 		nano := time.Now().UnixNano()
 		return strconv.FormatInt(nano, 10)
 	}
 	return base64.URLEncoding.EncodeToString(b)
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
+type _session struct {
+	runtime    *goja.Runtime
+	sessionMgr *SessionMgr
+	sessionID  *string
+	w          *http.ResponseWriter
+	r          *http.Request
+}
+
+func (This *_session) start(call goja.FunctionCall) goja.Value {
+	sessionID := This.sessionMgr.StartSession(*This.w, This.r)
+	This.sessionID = &sessionID
+	return nil
+}
+
+func (This *_session) end(call goja.FunctionCall) goja.Value {
+	This.sessionMgr.EndSession(*This.w, This.r)
+	This.sessionID = nil
+	return nil
+}
+
+func (This *_session) get(call goja.FunctionCall) goja.Value {
+	if This.sessionID == nil {
+		This.start(call)
+	}
+	key := call.Argument(0).String()
+	if value, ok := This.sessionMgr.GetSessionVal(*This.sessionID, key); ok {
+		return This.runtime.ToValue(value)
+	}
+	return goja.Null()
+}
+
+func (This *_session) set(call goja.FunctionCall) goja.Value {
+	if This.sessionID == nil {
+		This.start(call)
+	}
+	key := call.Argument(0).String()
+	value := call.Argument(1).Export()
+	if isValidType(value) {
+		This.sessionMgr.SetSessionVal(*This.sessionID, key, value)
+		return nil
+	}
+	panic(This.runtime.NewTypeError("value type %T is not permitted", value))
+}
+
+func NewSession(runtime *goja.Runtime, sessionMgr *SessionMgr, w *http.ResponseWriter, r *http.Request) *goja.Object {
+	This := &_session{
+		runtime:    runtime,
+		sessionMgr: sessionMgr,
+		w:          w,
+		r:          r,
+	}
+
+	o := runtime.NewObject()
+	o.Set("start", This.start)
+	o.Set("end", This.end)
+	o.Set("get", This.get)
+	o.Set("set", This.set)
+	return o
 }

@@ -2,3 +2,5 @@
 *.db
 go-server-js
 test/
+debug
+.vscode/

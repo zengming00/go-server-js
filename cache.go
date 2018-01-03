@@ -50,15 +50,19 @@ func (This *_cache) set(call goja.FunctionCall) goja.Value {
 		mu.Lock()
 		defer mu.Unlock()
 		cache[s] = v
+		return nil
 	}
-	panic(This.runtime.NewTypeError("set value type is not permitted"))
+	panic(This.runtime.NewTypeError("value type %T is not permitted", v))
 }
 
 func (This *_cache) get(call goja.FunctionCall) goja.Value {
 	mu.RLock()
 	defer mu.RUnlock()
 	s := call.Argument(0).String()
-	return This.runtime.ToValue(cache[s])
+	if v, ok := cache[s]; ok {
+		return This.runtime.ToValue(v)
+	}
+	return goja.Null()
 }
 
 func NewCache(runtime *goja.Runtime) *goja.Object {

@@ -29,7 +29,7 @@ import (
 )
 
 var _cwd string
-var sessionMgr *SessionMgr
+var _sessionMgr *SessionMgr
 
 type _server struct {
 	runtime          *goja.Runtime
@@ -70,14 +70,10 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			if registry == nil {
 				registry = new(require.Registry)
 			}
-			response := mhttp.NewResponse(runtime, &w)
-			runtime.Set("response", response)
-
-			request := mhttp.NewRequest(runtime, r)
-			runtime.Set("request", request)
-
-			cache := NewCache(runtime)
-			runtime.Set("cache", cache)
+			runtime.Set("response", mhttp.NewResponse(runtime, &w))
+			runtime.Set("request", mhttp.NewRequest(runtime, r))
+			runtime.Set("cache", NewCache(runtime))
+			runtime.Set("session", NewSession(runtime, _sessionMgr, &w, r))
 
 			ret, err := runFile(file, runtime, registry)
 			if err != nil {
@@ -131,7 +127,7 @@ func server() {
 		panic(err)
 	}
 
-	sessionMgr = NewSessionMgr("sid", s.config.SessionMaxLifeTimeSec)
+	_sessionMgr = NewSessionMgr("sid", s.config.SessionMaxLifeTimeSec)
 
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	// http.Handle("/public", s.fileServer)
