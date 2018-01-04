@@ -28,6 +28,38 @@ func (This *_rgba) setRGBA(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *_rgba) drawLineH(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawLineV(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawLine(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawRect(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) fillRect(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawCircle(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawChar(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
+func (This *_rgba) drawString(call goja.FunctionCall) goja.Value {
+	return nil
+}
+
 func NewRGBA(runtime *goja.Runtime, rgba *image.RGBA) *goja.Object {
 	This := &_rgba{
 		runtime: runtime,

@@ -103,15 +103,16 @@ function makeCapcha() {
   }
   return img;
 }
+
 // 测试生成验证码的效率
-var start = Date.now();
-var i = 0;
-while ((Date.now() - start) < 1000) {
-  makeCapcha();
-  // makeImg2();
-  i++;
-}
-console.log('1秒钟生成：' + i);
+// var start = Date.now();
+// var i = 0;
+// while ((Date.now() - start) < 1000) {
+//   makeCapcha();
+//   // makeImg2();
+//   i++;
+// }
+// console.log('1秒钟生成：' + i);
 
 
 // writeToResponse(makeImg2().img)

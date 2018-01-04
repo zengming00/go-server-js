@@ -5,6 +5,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+	"github.com/zengming00/go-server-js/lib/image/lib"
 )
 
 type _image struct {
@@ -30,6 +31,11 @@ func (This *_image) newRGBA(call goja.FunctionCall) goja.Value {
 	panic(This.runtime.NewTypeError("p0 is not a Rectangle type"))
 }
 
+func (This *_image) makeCapcha(call goja.FunctionCall) goja.Value {
+	rgba := lib.MakeCapcha()
+	return This.runtime.ToValue(NewRGBA(This.runtime, rgba))
+}
+
 func init() {
 	require.RegisterNativeModule("image", func(runtime *goja.Runtime, module *goja.Object) {
 		This := &_image{
@@ -38,5 +44,7 @@ func init() {
 		o := module.Get("exports").(*goja.Object)
 		o.Set("rect", This.rect)
 		o.Set("newRGBA", This.newRGBA)
+		o.Set("makeCapcha", This.makeCapcha)
+
 	})
 }
