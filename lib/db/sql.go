@@ -11,14 +11,26 @@ type _sql struct {
 	runtime *goja.Runtime
 }
 
+var reUseDb *sql.DB
+
 func (This *_sql) open(call goja.FunctionCall) goja.Value {
 	driverName := call.Argument(0).String()
 	dataSourceName := call.Argument(1).String()
+	reUse := call.Argument(2).ToBoolean()
+
 	retVal := This.runtime.NewObject()
+	if reUse && reUseDb != nil {
+		retVal.Set("value", NewDB(This.runtime, reUseDb))
+		retVal.Set("isReUse", true)
+		return retVal
+	}
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal
+	}
+	if reUse && reUseDb == nil {
+		reUseDb = db
 	}
 	retVal.Set("value", NewDB(This.runtime, db))
 	return retVal

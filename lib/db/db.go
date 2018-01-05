@@ -96,6 +96,18 @@ func (This *_db) begin(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
+func (This *_db) setMaxOpenConns(call goja.FunctionCall) goja.Value {
+	n := call.Argument(0).ToInteger()
+	This.db.SetMaxOpenConns(int(n))
+	return nil
+}
+
+func (This *_db) setMaxIdleConns(call goja.FunctionCall) goja.Value {
+	n := call.Argument(0).ToInteger()
+	This.db.SetMaxIdleConns(int(n))
+	return nil
+}
+
 func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	This := &_db{
 		runtime: runtime,
@@ -108,5 +120,7 @@ func NewDB(runtime *goja.Runtime, db *sql.DB) *goja.Object {
 	o.Set("prepare", This.prepare)
 	o.Set("stats", This.stats)
 	o.Set("begin", This.begin)
+	o.Set("setMaxOpenConns", This.setMaxOpenConns)
+	o.Set("setMaxIdleConns", This.setMaxIdleConns)
 	return o
 }

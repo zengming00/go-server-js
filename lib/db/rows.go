@@ -2,8 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/dop251/goja"
@@ -68,8 +66,7 @@ func (This *_rows) getData(call goja.FunctionCall) goja.Value {
 		case *string:
 			m[col] = *vv
 		default:
-			fmt.Printf("%T\n", vv)
-			panic(errors.New("unknown type"))
+			panic(This.runtime.NewTypeError("unknown type %T", vv))
 		}
 	}
 	return This.runtime.ToValue(m)
