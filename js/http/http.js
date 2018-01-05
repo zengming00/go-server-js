@@ -3,10 +3,6 @@ var file = require("file")
 var utils = require("utils")
 var url = require('url')
 
-var data = file.read('./js/b.js')
-console.log(utils.toString(data))
-console.log(url.queryEscape("asdf/asdf"))
-
 var obj = {
   ticket: '99c936b0-9c35-11e7-be48-43b6cddd43aa'
 };
@@ -28,10 +24,12 @@ console.log("Set-Cookie:", data.header['Set-Cookie'][0])
 obj = JSON.parse(data.body)
 var avatar = obj.result.avatar
 console.log("avatar:", avatar)
-
-data = http.request("GET", avatar, {}, '', 3000)
-
-file.write("./a.jpg", data.body)
-
+try {
+  data = http.request("GET", avatar, {}, '', 3000)
+  file.write("./a.jpg", data.body)
+} catch (e) {
+  console.log("err:", e)
+  throw e;
+}
 console.log('done.');
 

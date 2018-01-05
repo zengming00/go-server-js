@@ -70,10 +70,10 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			if registry == nil {
 				registry = new(require.Registry)
 			}
-			runtime.Set("response", mhttp.NewResponse(runtime, &w))
+			runtime.Set("response", mhttp.NewResponse(runtime, w))
 			runtime.Set("request", mhttp.NewRequest(runtime, r))
 			runtime.Set("cache", NewCache(runtime))
-			runtime.Set("session", NewSession(runtime, _sessionMgr, &w, r))
+			runtime.Set("session", NewSession(runtime, _sessionMgr, w, r))
 
 			ret, err := runFile(file, runtime, registry)
 			if err != nil {

@@ -9,13 +9,11 @@ import (
 
 type _resp struct {
 	runtime *goja.Runtime
-	w       *http.ResponseWriter
+	w       http.ResponseWriter
 }
 
 func (This *_resp) header(call goja.FunctionCall) goja.Value {
-	w := *This.w
-	hd := w.Header()
-	return NewHeader(This.runtime, &hd)
+	return NewHeader(This.runtime, This.w.Header())
 }
 
 func (This *_resp) write(call goja.FunctionCall) goja.Value {
@@ -45,8 +43,7 @@ func (This *_resp) write(call goja.FunctionCall) goja.Value {
 		return retVal
 	}
 
-	w := *This.w
-	n, err := w.Write(data)
+	n, err := This.w.Write(data)
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal
@@ -57,8 +54,7 @@ func (This *_resp) write(call goja.FunctionCall) goja.Value {
 
 func (This *_resp) writeHeader(call goja.FunctionCall) goja.Value {
 	n := call.Argument(0).ToInteger()
-	w := *This.w
-	w.WriteHeader(int(n))
+	This.w.WriteHeader(int(n))
 	return nil
 }
 
@@ -69,15 +65,15 @@ func (This *_resp) setCookie(call goja.FunctionCall) goja.Value {
 	cookie.Path = call.Argument(2).String()
 	cookie.MaxAge = int(call.Argument(3).ToInteger())
 	cookie.HttpOnly = call.Argument(4).ToBoolean()
-	http.SetCookie(*This.w, cookie)
+	http.SetCookie(This.w, cookie)
 	return nil
 }
 
 func (This *_resp) getPrototype(call goja.FunctionCall) goja.Value {
-	return This.runtime.ToValue(*This.w)
+	return This.runtime.ToValue(This.w)
 }
 
-func NewResponse(runtime *goja.Runtime, w *http.ResponseWriter) *goja.Object {
+func NewResponse(runtime *goja.Runtime, w http.ResponseWriter) *goja.Object {
 	This := &_resp{
 		runtime: runtime,
 		w:       w,

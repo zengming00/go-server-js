@@ -140,18 +140,18 @@ type _session struct {
 	runtime    *goja.Runtime
 	sessionMgr *SessionMgr
 	sessionID  *string
-	w          *http.ResponseWriter
+	w          http.ResponseWriter
 	r          *http.Request
 }
 
 func (This *_session) start(call goja.FunctionCall) goja.Value {
-	sessionID := This.sessionMgr.StartSession(*This.w, This.r)
+	sessionID := This.sessionMgr.StartSession(This.w, This.r)
 	This.sessionID = &sessionID
 	return nil
 }
 
 func (This *_session) end(call goja.FunctionCall) goja.Value {
-	This.sessionMgr.EndSession(*This.w, This.r)
+	This.sessionMgr.EndSession(This.w, This.r)
 	This.sessionID = nil
 	return nil
 }
@@ -180,7 +180,7 @@ func (This *_session) set(call goja.FunctionCall) goja.Value {
 	panic(This.runtime.NewTypeError("value type %T is not permitted", value))
 }
 
-func NewSession(runtime *goja.Runtime, sessionMgr *SessionMgr, w *http.ResponseWriter, r *http.Request) *goja.Object {
+func NewSession(runtime *goja.Runtime, sessionMgr *SessionMgr, w http.ResponseWriter, r *http.Request) *goja.Object {
 	This := &_session{
 		runtime:    runtime,
 		sessionMgr: sessionMgr,

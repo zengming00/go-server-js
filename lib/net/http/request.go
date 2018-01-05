@@ -69,10 +69,11 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o.Set("contentLength", r.ContentLength)
 	o.Set("method", r.Method)
 	o.Set("host", r.Host)
-	o.Set("header", NewHeader(runtime, &r.Header))
+	o.Set("header", NewHeader(runtime, r.Header))
+	o.Set("headers", map[string][]string(r.Header))
 	o.Set("uri", r.RequestURI)
 	o.Set("remoteAddr", r.RemoteAddr)
-	o.Set("form", url.NewValues(runtime, &r.Form))
+	o.Set("form", url.NewValues(runtime, r.Form))
 
 	o.Set("getHeader", This.getHeader)
 	o.Set("formValue", This.formValue)

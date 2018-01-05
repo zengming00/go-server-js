@@ -8,11 +8,11 @@ import (
 
 type _conn struct {
 	runtime *goja.Runtime
-	conn    *redis.Conn
+	conn    redis.Conn
 }
 
 func (This *_conn) close(call goja.FunctionCall) goja.Value {
-	err := (*This.conn).Close()
+	err := This.conn.Close()
 	if err != nil {
 		return This.runtime.ToValue(err.Error())
 	}
@@ -23,7 +23,7 @@ func (This *_conn) do(call goja.FunctionCall) goja.Value {
 	commandName := call.Argument(0).String()
 	args := lib.GetAllArgs(&call)
 	retVal := This.runtime.NewObject()
-	reply, err := (*This.conn).Do(commandName, args[1:]...)
+	reply, err := This.conn.Do(commandName, args[1:]...)
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal
@@ -32,7 +32,7 @@ func (This *_conn) do(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
-func NewConn(runtime *goja.Runtime, conn *redis.Conn) *goja.Object {
+func NewConn(runtime *goja.Runtime, conn redis.Conn) *goja.Object {
 	This := &_conn{
 		runtime: runtime,
 		conn:    conn,

@@ -8,7 +8,7 @@ import (
 
 type _header struct {
 	runtime *goja.Runtime
-	header  *http.Header
+	header  http.Header
 }
 
 func (This *_header) add(call goja.FunctionCall) goja.Value {
@@ -37,7 +37,7 @@ func (This *_header) set(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func NewHeader(runtime *goja.Runtime, header *http.Header) *goja.Object {
+func NewHeader(runtime *goja.Runtime, header http.Header) *goja.Object {
 	This := &_header{
 		runtime: runtime,
 		header:  header,

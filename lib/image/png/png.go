@@ -23,7 +23,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	wo, err := wproto(p0)
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 	w, ok := wo.Export().(io.Writer)
 	if !ok {
@@ -36,7 +36,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	mo, err := mproto(p1)
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 	m, ok := mo.Export().(image.Image)
 	if !ok {

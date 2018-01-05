@@ -46,8 +46,7 @@ func (This *_url) queryUnescape(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_url) newValues(call goja.FunctionCall) goja.Value {
-	v := make(url.Values)
-	return NewValues(This.runtime, &v)
+	return NewValues(This.runtime, make(url.Values))
 }
 
 func NewURL(runtime *goja.Runtime, u *url.URL) *goja.Object {

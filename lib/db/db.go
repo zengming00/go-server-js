@@ -59,7 +59,7 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 			retVal.Set("err", err.Error())
 			return retVal
 		}
-		retVal.Set("value", NewResult(This.runtime, &result))
+		retVal.Set("value", NewResult(This.runtime, result))
 	} else {
 		retVal.Set("err", "p0 is not a string")
 	}

@@ -8,12 +8,12 @@ import (
 
 type _result struct {
 	runtime *goja.Runtime
-	result  *sql.Result
+	result  sql.Result
 }
 
 func (This *_result) lastInsertId(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
-	id, err := (*This.result).LastInsertId()
+	id, err := This.result.LastInsertId()
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal
@@ -24,7 +24,7 @@ func (This *_result) lastInsertId(call goja.FunctionCall) goja.Value {
 
 func (This *_result) rowsAffected(call goja.FunctionCall) goja.Value {
 	retVal := This.runtime.NewObject()
-	rows, err := (*This.result).RowsAffected()
+	rows, err := This.result.RowsAffected()
 	if err != nil {
 		retVal.Set("err", err.Error())
 		return retVal
@@ -33,7 +33,7 @@ func (This *_result) rowsAffected(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
-func NewResult(runtime *goja.Runtime, result *sql.Result) *goja.Object {
+func NewResult(runtime *goja.Runtime, result sql.Result) *goja.Object {
 	This := &_result{
 		runtime: runtime,
 		result:  result,

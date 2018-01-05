@@ -8,7 +8,7 @@ import (
 
 type _values struct {
 	runtime *goja.Runtime
-	values  *url.Values
+	values  url.Values
 }
 
 func (This *_values) del(call goja.FunctionCall) goja.Value {
@@ -37,7 +37,7 @@ func (This *_values) get(call goja.FunctionCall) goja.Value {
 
 func (This *_values) gets(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
-	values := (*This.values)[key]
+	values := This.values[key]
 	return This.runtime.ToValue(values)
 }
 
@@ -48,7 +48,7 @@ func (This *_values) set(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func NewValues(runtime *goja.Runtime, values *url.Values) *goja.Object {
+func NewValues(runtime *goja.Runtime, values url.Values) *goja.Object {
 	This := &_values{
 		runtime: runtime,
 		values:  values,

@@ -28,11 +28,11 @@ func (This *_rows) getData(call goja.FunctionCall) goja.Value {
 	rows := This.rows
 	cols, err := rows.Columns()
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 	ct, err := rows.ColumnTypes()
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 
 	arr := make([]interface{}, len(ct))
@@ -43,7 +43,7 @@ func (This *_rows) getData(call goja.FunctionCall) goja.Value {
 
 	err = rows.Scan(arr...)
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 
 	m := make(map[string]interface{})

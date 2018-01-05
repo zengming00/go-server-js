@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -24,14 +23,14 @@ func (This *_http) request(call goja.FunctionCall) goja.Value {
 
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 
 	for k, v := range headers {
 		if str, ok := v.(string); ok {
 			req.Header.Set(k, str)
 		} else {
-			panic(This.runtime.NewTypeError(fmt.Sprintf("header[" + k + "] is not string")))
+			panic(This.runtime.NewTypeError("header[" + k + "] is not string"))
 		}
 	}
 
@@ -39,12 +38,12 @@ func (This *_http) request(call goja.FunctionCall) goja.Value {
 	client.Timeout = time.Duration(timeout) * time.Millisecond
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 	defer res.Body.Close()
 	datas, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		panic(This.runtime.NewGoError(err))
 	}
 
 	headerObj := This.runtime.NewObject()
