@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -47,7 +47,7 @@ type config struct {
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 	// 加上这行后，内存的使用情况好了一些
-	runtime.GC()
+	// runtime.GC()
 	// defer runtime.GC()
 
 	u := r.URL
@@ -141,6 +141,7 @@ func server() {
 }
 
 func main() {
+	fmt.Println(debug.SetGCPercent(1))
 	if len(os.Args) == 2 {
 		filename := os.Args[1]
 		start := time.Now()
