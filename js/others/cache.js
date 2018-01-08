@@ -23,7 +23,10 @@ function get(key) {
   }
 }
 
-cache.incr("a", 10)
-cache.decr("a", 10)
+get('i')
+cache.add("i", 3, 10)
+get('i')
+cache.sub("i", 2, 10)
+get('i')
 
 console.log("--------------------------------------")

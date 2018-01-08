@@ -52,7 +52,7 @@ func (mgr *CacheMgr) isExpired(key string) bool {
 	return true
 }
 
-func (mgr *CacheMgr) add(key string, v int64, expireSec int64) int64 {
+func (mgr *CacheMgr) Add(key string, v int64, expireSec int64) int64 {
 	mgr.mu.Lock()
 	defer mgr.mu.Unlock()
 
@@ -69,18 +69,10 @@ func (mgr *CacheMgr) add(key string, v int64, expireSec int64) int64 {
 		}
 	}
 	mgr.items[key] = &CacheItem{
-		value:         int64(0),
+		value:         v,
 		expireTimeSec: expireTimeSec,
 	}
 	return 0
-}
-
-func (mgr *CacheMgr) Incr(key string, expireSec int64) int64 {
-	return mgr.add(key, 1, expireSec)
-}
-
-func (mgr *CacheMgr) Decr(key string, expireSec int64) int64 {
-	return mgr.add(key, -1, expireSec)
 }
 
 func (mgr *CacheMgr) Set(key string, value interface{}, expireSec int64) {
@@ -158,18 +150,20 @@ func (This *_cache) flush(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func (This *_cache) incr(call goja.FunctionCall) goja.Value {
+func (This *_cache) add(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
-	expireSec := call.Argument(1).ToInteger()
-	value := This.cacheMgr.Incr(key, expireSec)
-	return This.runtime.ToValue(value)
+	value := call.Argument(1).ToInteger()
+	expireSec := call.Argument(2).ToInteger()
+	oldValue := This.cacheMgr.Add(key, value, expireSec)
+	return This.runtime.ToValue(oldValue)
 }
 
-func (This *_cache) decr(call goja.FunctionCall) goja.Value {
+func (This *_cache) sub(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
-	expireSec := call.Argument(1).ToInteger()
-	value := This.cacheMgr.Decr(key, expireSec)
-	return This.runtime.ToValue(value)
+	value := call.Argument(1).ToInteger()
+	expireSec := call.Argument(2).ToInteger()
+	oldValue := This.cacheMgr.Add(key, -value, expireSec)
+	return This.runtime.ToValue(oldValue)
 }
 
 func NewCache(runtime *goja.Runtime, cacheMgr *CacheMgr) *goja.Object {
@@ -182,8 +176,8 @@ func NewCache(runtime *goja.Runtime, cacheMgr *CacheMgr) *goja.Object {
 	o.Set("set", This.set)
 	o.Set("get", This.get)
 	o.Set("del", This.del)
-	o.Set("incr", This.incr)
-	o.Set("decr", This.decr)
+	o.Set("add", This.add)
+	o.Set("sub", This.sub)
 	o.Set("flush", This.flush)
 	return o
 }
