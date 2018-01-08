@@ -19,6 +19,18 @@ func (This *_req) formValue(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(value)
 }
 
+func (This *_req) formFile(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	file, fileHeader, err := This.r.FormFile(key)
+	retVal := map[string]interface{}{
+		"file":   file,
+		"name":   fileHeader.Filename,
+		"header": map[string][]string(fileHeader.Header),
+		"err":    err,
+	}
+	return This.runtime.ToValue(retVal)
+}
+
 func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 	value := This.r.UserAgent()
 	return This.runtime.ToValue(value)
@@ -26,6 +38,15 @@ func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
 
 func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
 	err := This.r.ParseForm()
+	if err != nil {
+		return This.runtime.ToValue(err.Error())
+	}
+	return nil
+}
+
+func (This *_req) parseMultipartForm(call goja.FunctionCall) goja.Value {
+	maxMemory := call.Argument(0).ToInteger()
+	err := This.r.ParseMultipartForm(maxMemory)
 	if err != nil {
 		return This.runtime.ToValue(err.Error())
 	}
@@ -87,8 +108,10 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o.Set("form", url.NewValues(runtime, r.Form))
 
 	o.Set("formValue", This.formValue)
+	o.Set("formFile", This.formFile)
 	o.Set("userAgent", This.userAgent)
 	o.Set("parseForm", This.parseForm)
+	o.Set("parseMultipartForm", This.parseMultipartForm)
 	o.Set("cookie", This.cookie)
 	o.Set("cookies", This.cookies)
 	o.Set("getRawBody", This.getRawBody)

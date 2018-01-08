@@ -24,9 +24,9 @@ function get(key) {
 }
 
 get('i')
-cache.add("i", 3, 10)
+console.log('oldv:', cache.add("i", 3, 10))
 get('i')
-cache.sub("i", 2, 10)
+console.log('oldv:', cache.sub("i", 2, 10))
 get('i')
 
 console.log("--------------------------------------")

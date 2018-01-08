@@ -91,6 +91,18 @@ func (This *_os) chdir(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
+func (This *_os) openFile(call goja.FunctionCall) goja.Value {
+	name := call.Argument(0).String()
+	flag := call.Argument(1).ToInteger()
+	perm := call.Argument(2).ToInteger()
+	file, err := os.OpenFile(name, int(flag), os.FileMode(perm))
+	// todo file
+	return This.runtime.ToValue(map[string]interface{}{
+		"value": file,
+		"err":  err,
+	})
+}
+
 func (This *_os) create(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	retVal := This.runtime.NewObject()
@@ -110,7 +122,11 @@ func init() {
 			runtime: runtime,
 		}
 		o := module.Get("exports").(*goja.Object)
+		o.Set("O_CREATE", os.O_CREATE)
+		o.Set("O_WRONLY", os.O_WRONLY)
+
 		o.Set("create", This.create)
+		o.Set("openFile", This.openFile)
 		o.Set("args", os.Args)
 		o.Set("getEnv", This.getEnv)
 		o.Set("tempDir", This.tempDir)
