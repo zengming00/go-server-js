@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"net/http"
 
 	"github.com/dop251/goja"
@@ -30,11 +31,23 @@ func (This *_header) get(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(value)
 }
 
+func (This *_header) gets(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	value := This.header[key]
+	return This.runtime.ToValue(value)
+}
+
 func (This *_header) set(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
 	value := call.Argument(1).String()
 	This.header.Set(key, value)
 	return nil
+}
+
+func (This *_header) getRaw(call goja.FunctionCall) goja.Value {
+	byteBuf := &bytes.Buffer{}
+	This.header.Write(byteBuf)
+	return This.runtime.ToValue(byteBuf.Bytes())
 }
 
 func NewHeader(runtime *goja.Runtime, header http.Header) *goja.Object {
@@ -47,5 +60,7 @@ func NewHeader(runtime *goja.Runtime, header http.Header) *goja.Object {
 	o.Set("del", This.del)
 	o.Set("set", This.set)
 	o.Set("get", This.get)
+	o.Set("gets", This.gets)
+	o.Set("getRaw", This.getRaw)
 	return o
 }

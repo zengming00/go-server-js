@@ -10,10 +10,8 @@ function log(d) {
 log("method: " + request.method) // POST
 log("uri: " + request.uri) // /js/http/request.js?a=b&c=d
 log("host: " + request.host) // localhost:8080
-log("getHeader('content-type'): " + request.getHeader('content-type')) // application/x-www-form-urlencoded
 log("userAgent: " + request.userAgent()) // PostmanRuntime/7.1.1
 log("remoteAddr: " + request.remoteAddr) // [::1]:63716
-log("headers:" + JSON.stringify(request.headers, null, 2))
 
 // 若调用 parseForm() 则body参数必需以'application/x-www-form-urlencoded'方式传递
 // 不调用，则可以由'application/x-www-form-urlencoded'和'multipart/form-data'传递
