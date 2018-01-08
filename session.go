@@ -14,7 +14,6 @@ import (
 )
 
 type Session struct {
-	mSessionID        string
 	mLastTimeAccessed time.Time
 	mValues           map[string]interface{}
 }
@@ -48,7 +47,7 @@ func (mgr *SessionMgr) StartSession(w http.ResponseWriter, r *http.Request) stri
 
 	if sessionID == "" {
 		sessionID = url.QueryEscape(mgr.NewSessionID())
-		session := &Session{mSessionID: sessionID, mLastTimeAccessed: time.Now(), mValues: make(map[string]interface{})}
+		session := &Session{mLastTimeAccessed: time.Now(), mValues: make(map[string]interface{})}
 		mgr.mSessions[sessionID] = session
 	}
 
@@ -113,15 +112,16 @@ func (mgr *SessionMgr) GetSessionIDList() []string {
 }
 
 func (mgr *SessionMgr) GC() {
-	mgr.mLock.Lock()
-	defer mgr.mLock.Unlock()
-
-	for sessionID, session := range mgr.mSessions {
-		if session.mLastTimeAccessed.Unix()+mgr.mMaxLifeTimeSec < time.Now().Unix() {
-			delete(mgr.mSessions, sessionID)
+	for {
+		<-time.After(time.Duration(mgr.mMaxLifeTimeSec) * time.Second)
+		mgr.mLock.Lock()
+		for sessionID, session := range mgr.mSessions {
+			if session.mLastTimeAccessed.Unix()+mgr.mMaxLifeTimeSec < time.Now().Unix() {
+				delete(mgr.mSessions, sessionID)
+			}
 		}
+		mgr.mLock.Unlock()
 	}
-	time.AfterFunc(time.Duration(mgr.mMaxLifeTimeSec)*time.Second, func() { mgr.GC() })
 }
 
 func (mgr *SessionMgr) NewSessionID() string {
@@ -173,7 +173,7 @@ func (This *_session) set(call goja.FunctionCall) goja.Value {
 	}
 	key := call.Argument(0).String()
 	value := call.Argument(1).Export()
-	if isValidType(value) {
+	if IsValidType(value) {
 		This.sessionMgr.SetSessionVal(*This.sessionID, key, value)
 		return nil
 	}

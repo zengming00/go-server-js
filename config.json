@@ -2,5 +2,6 @@
   "IndexFile": "/js/index.js",
   "Port": "8080",
   "WorkDir": null,
-  "SessionMaxLifeTimeSec": 900
+  "SessionMaxLifeTimeSec": 900,
+  "CacheGcIntervalSec": 60
 }

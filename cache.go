@@ -1,77 +1,189 @@
 package main
 
 import (
-	"reflect"
 	"sync"
+	"time"
 
 	"github.com/dop251/goja"
 )
 
-type _cache struct {
-	runtime *goja.Runtime
+type CacheMgr struct {
+	mu            sync.RWMutex
+	gcIntervalSec int64
+	items         map[string]*CacheItem
 }
 
-var cache = make(map[string]interface{})
-var mu sync.RWMutex
-
-var validType = []reflect.Kind{
-	reflect.Bool,
-	reflect.Int,
-	reflect.Int8,
-	reflect.Int16,
-	reflect.Int32,
-	reflect.Int64,
-	reflect.Uint,
-	reflect.Uint8,
-	reflect.Uint16,
-	reflect.Uint32,
-	reflect.Uint64,
-	reflect.Float32,
-	reflect.Float64,
-	reflect.Complex64,
-	reflect.Complex128,
-	reflect.String,
+type CacheItem struct {
+	value         interface{}
+	expireTimeSec int64
 }
 
-func isValidType(val interface{}) bool {
-	k := reflect.TypeOf(val).Kind()
-	for _, v := range validType {
-		if v == k {
+func NewCacheMgr(gcIntervalSec int64) *CacheMgr {
+	mgr := &CacheMgr{
+		gcIntervalSec: gcIntervalSec,
+		items:         make(map[string]*CacheItem),
+	}
+	go mgr.gc()
+	return mgr
+}
+
+func (mgr *CacheMgr) gc() {
+	for {
+		<-time.After(time.Duration(mgr.gcIntervalSec) * time.Second)
+		mgr.mu.Lock()
+		for key := range mgr.items {
+			mgr.isExpired(key)
+		}
+		mgr.mu.Unlock()
+	}
+}
+
+func (mgr *CacheMgr) isExpired(key string) bool {
+	if item, ok := mgr.items[key]; ok {
+		if item.expireTimeSec <= 0 {
+			return false
+		}
+		if item.expireTimeSec < time.Now().Unix() {
+			delete(mgr.items, key)
 			return true
 		}
+		return false
 	}
-	return false
+	return true
+}
+
+func (mgr *CacheMgr) add(key string, v int64, expireSec int64) int64 {
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+
+	expireTimeSec := int64(-1)
+	if expireSec > 0 {
+		expireTimeSec = time.Now().Unix() + expireSec
+	}
+
+	if item, ok := mgr.items[key]; ok {
+		if oldVal, ok := item.value.(int64); ok {
+			item.expireTimeSec = expireTimeSec
+			item.value = oldVal + v
+			return oldVal
+		}
+	}
+	mgr.items[key] = &CacheItem{
+		value:         int64(0),
+		expireTimeSec: expireTimeSec,
+	}
+	return 0
+}
+
+func (mgr *CacheMgr) Incr(key string, expireSec int64) int64 {
+	return mgr.add(key, 1, expireSec)
+}
+
+func (mgr *CacheMgr) Decr(key string, expireSec int64) int64 {
+	return mgr.add(key, -1, expireSec)
+}
+
+func (mgr *CacheMgr) Set(key string, value interface{}, expireSec int64) {
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+
+	expireTimeSec := int64(-1)
+	if expireSec > 0 {
+		expireTimeSec = time.Now().Unix() + expireSec
+	}
+	mgr.items[key] = &CacheItem{
+		value:         value,
+		expireTimeSec: expireTimeSec,
+	}
+}
+
+func (mgr *CacheMgr) Get(key string) (interface{}, bool) {
+	mgr.mu.RLock()
+	defer mgr.mu.RUnlock()
+	if !mgr.isExpired(key) {
+		if v, ok := mgr.items[key]; ok {
+			return v.value, true
+		}
+	}
+	return nil, false
+}
+
+func (mgr *CacheMgr) Del(key string) {
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+	delete(mgr.items, key)
+}
+
+func (mgr *CacheMgr) Flush() {
+	mgr.mu.Lock()
+	defer mgr.mu.Unlock()
+	mgr.items = make(map[string]*CacheItem)
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+type _cache struct {
+	runtime  *goja.Runtime
+	cacheMgr *CacheMgr
 }
 
 func (This *_cache) set(call goja.FunctionCall) goja.Value {
-	s := call.Argument(0).String()
-	v := call.Argument(1).Export()
-	if isValidType(v) {
-		mu.Lock()
-		defer mu.Unlock()
-		cache[s] = v
+	key := call.Argument(0).String()
+	value := call.Argument(1).Export()
+	expireSec := call.Argument(2).ToInteger()
+	if IsValidType(value) {
+		This.cacheMgr.Set(key, value, expireSec)
 		return nil
 	}
-	panic(This.runtime.NewTypeError("value type %T is not permitted", v))
+	panic(This.runtime.NewTypeError("value type %T is not permitted", value))
 }
 
 func (This *_cache) get(call goja.FunctionCall) goja.Value {
-	mu.RLock()
-	defer mu.RUnlock()
-	s := call.Argument(0).String()
-	if v, ok := cache[s]; ok {
-		return This.runtime.ToValue(v)
-	}
-	return goja.Null()
+	key := call.Argument(0).String()
+	value, ok := This.cacheMgr.Get(key)
+	return This.runtime.ToValue(map[string]interface{}{
+		"value": value,
+		"ok":    ok,
+	})
 }
 
-func NewCache(runtime *goja.Runtime) *goja.Object {
+func (This *_cache) del(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	This.cacheMgr.Del(key)
+	return nil
+}
+
+func (This *_cache) flush(call goja.FunctionCall) goja.Value {
+	This.cacheMgr.Flush()
+	return nil
+}
+
+func (This *_cache) incr(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	expireSec := call.Argument(1).ToInteger()
+	value := This.cacheMgr.Incr(key, expireSec)
+	return This.runtime.ToValue(value)
+}
+
+func (This *_cache) decr(call goja.FunctionCall) goja.Value {
+	key := call.Argument(0).String()
+	expireSec := call.Argument(1).ToInteger()
+	value := This.cacheMgr.Decr(key, expireSec)
+	return This.runtime.ToValue(value)
+}
+
+func NewCache(runtime *goja.Runtime, cacheMgr *CacheMgr) *goja.Object {
 	This := &_cache{
-		runtime: runtime,
+		runtime:  runtime,
+		cacheMgr: cacheMgr,
 	}
 
 	o := runtime.NewObject()
 	o.Set("set", This.set)
 	o.Set("get", This.get)
+	o.Set("del", This.del)
+	o.Set("incr", This.incr)
+	o.Set("decr", This.decr)
+	o.Set("flush", This.flush)
 	return o
 }

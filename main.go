@@ -30,6 +30,7 @@ import (
 
 var _cwd string
 var _sessionMgr *SessionMgr
+var _cacheMgr *CacheMgr
 
 type _server struct {
 	runtime          *goja.Runtime
@@ -43,6 +44,7 @@ type config struct {
 	Port                  string
 	WorkDir               *string
 	SessionMaxLifeTimeSec int64
+	CacheGcIntervalSec    int64
 }
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +74,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			}
 			runtime.Set("response", mhttp.NewResponse(runtime, w))
 			runtime.Set("request", mhttp.NewRequest(runtime, r))
-			runtime.Set("cache", NewCache(runtime))
+			runtime.Set("cache", NewCache(runtime, _cacheMgr))
 			runtime.Set("session", NewSession(runtime, _sessionMgr, w, r))
 
 			ret, err := runFile(file, runtime, registry)
@@ -110,6 +112,7 @@ func server() {
 			IndexFile: "/js/index.js",
 			Port:      "8080",
 			SessionMaxLifeTimeSec: 60 * 15,
+			CacheGcIntervalSec:    60,
 		},
 	}
 
@@ -128,6 +131,9 @@ func server() {
 	}
 
 	_sessionMgr = NewSessionMgr("sid", s.config.SessionMaxLifeTimeSec)
+	log.Printf("SessionMaxLifeTimeSec: %d\r\n", s.config.SessionMaxLifeTimeSec)
+	_cacheMgr = NewCacheMgr(s.config.CacheGcIntervalSec)
+	log.Printf("CacheGcIntervalSec: %d\r\n", s.config.CacheGcIntervalSec)
 
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	// http.Handle("/public", s.fileServer)
