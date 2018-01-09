@@ -12,10 +12,6 @@ type _resp struct {
 	w       http.ResponseWriter
 }
 
-func (This *_resp) header(call goja.FunctionCall) goja.Value {
-	return NewHeader(This.runtime, This.w.Header())
-}
-
 func (This *_resp) write(call goja.FunctionCall) goja.Value {
 	p1 := call.Argument(0).Export()
 
@@ -71,7 +67,7 @@ func NewResponse(runtime *goja.Runtime, w http.ResponseWriter) *goja.Object {
 		w:       w,
 	}
 	o := runtime.NewObject()
-	o.Set("header", This.header)
+	o.Set("header", NewHeader(This.runtime, This.w.Header()))
 	o.Set("write", This.write)
 	o.Set("writeHeader", This.writeHeader)
 	o.Set("setCookie", This.setCookie)

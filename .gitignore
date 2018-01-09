@@ -1,6 +1,7 @@
 *.exe
 *.db
 go-server-js
+config.json
 test/
 debug
 .vscode/
