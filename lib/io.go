@@ -12,16 +12,34 @@ type _io struct {
 }
 
 func (This *_io) copy(call goja.FunctionCall) goja.Value {
-	p0 := call.Argument(0).Export()
-	p1 := call.Argument(1).Export()
-	dst, ok := p0.(io.Writer)
+	p0 := call.Argument(0).ToObject(This.runtime)
+	p0proto, ok := goja.AssertFunction(p0.Get("getPrototype"))
+	if !ok {
+		panic(This.runtime.NewTypeError("p0 not have getPrototype() function"))
+	}
+	p0obj, err := p0proto(p0)
+	if err != nil {
+		panic(This.runtime.NewGoError(err))
+	}
+	dst, ok := p0obj.Export().(io.Writer)
 	if !ok {
 		panic(This.runtime.NewTypeError("p0 is not Writer: %T", p0))
 	}
-	src, ok := p1.(io.Reader)
+
+	p1 := call.Argument(1).ToObject(This.runtime)
+	p1proto, ok := goja.AssertFunction(p1.Get("getPrototype"))
+	if !ok {
+		panic(This.runtime.NewTypeError("p1 not have getPrototype() function"))
+	}
+	p1obj, err := p1proto(p1)
+	if err != nil {
+		panic(This.runtime.NewGoError(err))
+	}
+	src, ok := p1obj.Export().(io.Reader)
 	if !ok {
 		panic(This.runtime.NewTypeError("p1 is not Reader: %T", p1))
 	}
+
 	written, err := io.Copy(dst, src)
 	return MakeReturnValue(This.runtime, written, err)
 }

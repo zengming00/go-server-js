@@ -83,12 +83,15 @@ func (This *_os) openFile(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	flag := call.Argument(1).ToInteger()
 	perm := call.Argument(2).ToInteger()
+
+	retVal := This.runtime.NewObject()
 	file, err := os.OpenFile(name, int(flag), os.FileMode(perm))
-	// todo file
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": file,
-		"err":   err,
-	})
+	if err != nil {
+		retVal.Set("err", err.Error())
+		return retVal
+	}
+	retVal.Set("value", NewFile(This.runtime, file))
+	return retVal
 }
 
 func (This *_os) create(call goja.FunctionCall) goja.Value {

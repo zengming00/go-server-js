@@ -12,12 +12,12 @@ if (request.method === 'POST') {
   if (o.err) {
     throw o.err
   }
-  // todo o.file.close()
-  console.log("%j", o.name)
-  // todo 检查perm  flag
+  console.log(o.name)
   var r = os.openFile(o.name, os.O_CREATE|os.O_WRONLY, 0666)
   var file = r.value
   io.copy(file, o.file)
+  o.file.close()
+  file.close()
   response.write(JSON.stringify(o.header, null, 2))
 
 } else {

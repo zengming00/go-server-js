@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/dop251/goja"
-	"github.com/zengming00/go-server-js/lib/net/url"
 	"github.com/zengming00/go-server-js/lib"
+	"github.com/zengming00/go-server-js/lib/net/url"
 )
 
 type _req struct {
@@ -23,14 +23,16 @@ func (This *_req) formValue(call goja.FunctionCall) goja.Value {
 func (This *_req) formFile(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
 	file, fileHeader, err := This.r.FormFile(key)
-	// todo
-	retVal := map[string]interface{}{
-		"file":   file,
+	if err != nil {
+		return This.runtime.ToValue(map[string]interface{}{
+			"err": err.Error(),
+		})
+	}
+	return This.runtime.ToValue(map[string]interface{}{
+		"file":   NewMultipartFile(This.runtime, file),
 		"name":   fileHeader.Filename,
 		"header": map[string][]string(fileHeader.Header),
-		"err":    err,
-	}
-	return This.runtime.ToValue(retVal)
+	})
 }
 
 func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
@@ -57,15 +59,15 @@ func (This *_req) parseMultipartForm(call goja.FunctionCall) goja.Value {
 
 func (This *_req) cookie(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
-
 	c, err := This.r.Cookie(name)
 	if err != nil {
-		retVal.Set("err", err.Error())
-	} else {
-		retVal.Set("value", NewCookie(This.runtime, c))
+		return This.runtime.ToValue(map[string]interface{}{
+			"err": err.Error(),
+		})
 	}
-	return retVal
+	return This.runtime.ToValue(map[string]interface{}{
+		"value": NewCookie(This.runtime, c),
+	})
 }
 
 func (This *_req) cookies(call goja.FunctionCall) goja.Value {

@@ -27,7 +27,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	w, ok := wo.Export().(io.Writer)
 	if !ok {
-		panic(This.runtime.NewTypeError("p0 can not convert to *io.Writer"))
+		panic(This.runtime.NewTypeError("p0 can not convert to io.Writer"))
 	}
 
 	mproto, ok := goja.AssertFunction(p1.Get("getPrototype"))
@@ -40,7 +40,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 	}
 	m, ok := mo.Export().(image.Image)
 	if !ok {
-		panic(This.runtime.NewTypeError("p0 can not convert to *image.Image"))
+		panic(This.runtime.NewTypeError("p0 can not convert to image.Image"))
 	}
 	err = png.Encode(w, m)
 	if err != nil {
