@@ -23,10 +23,7 @@ func (This *_io) copy(call goja.FunctionCall) goja.Value {
 		panic(This.runtime.NewTypeError("p1 is not Reader: %T", p1))
 	}
 	written, err := io.Copy(dst, src)
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": written,
-		"err":   err,
-	})
+	return MakeReturnValue(This.runtime, written, err)
 }
 
 func init() {

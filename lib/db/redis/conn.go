@@ -22,14 +22,8 @@ func (This *_conn) close(call goja.FunctionCall) goja.Value {
 func (This *_conn) do(call goja.FunctionCall) goja.Value {
 	commandName := call.Argument(0).String()
 	args := lib.GetAllArgs(&call)
-	retVal := This.runtime.NewObject()
 	reply, err := This.conn.Do(commandName, args[1:]...)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", This.runtime.ToValue(reply))
-	return retVal
+	return lib.MakeReturnValue(This.runtime, reply, err)
 }
 
 func NewConn(runtime *goja.Runtime, conn redis.Conn) *goja.Object {

@@ -76,6 +76,22 @@ func (This *_types) stringValue(call goja.FunctionCall) goja.Value {
 	panic(This.runtime.NewTypeError("%T can not convert to string value", v))
 }
 
+func (This *_types) makeByteSlice(call goja.FunctionCall) goja.Value {
+	mLen := call.Argument(0).ToInteger()
+	mCap := mLen
+	if len(call.Arguments) != 1 {
+		mCap = call.Argument(1).ToInteger()
+	}
+	v := make([]byte, mLen, mCap)
+	return This.runtime.ToValue(v)
+}
+
+func (This *_types) test(call goja.FunctionCall) goja.Value {
+	v := call.Argument(0).Export()
+	fmt.Printf("%T %[1]v\n", v)
+	return nil
+}
+
 func init() {
 	require.RegisterNativeModule("types", func(runtime *goja.Runtime, module *goja.Object) {
 		This := &_types{
@@ -91,7 +107,10 @@ func init() {
 		o.Set("newString", This.newString)
 		o.Set("stringValue", This.stringValue)
 
+		o.Set("makeByteSlice", This.makeByteSlice)
+
 		o.Set("scan", This.scan)
+		o.Set("test", This.test)
 		o.Set("err", This.err)
 		o.Set("err2", This.err2)
 	})

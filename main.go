@@ -147,7 +147,7 @@ func server() {
 }
 
 func main() {
-	fmt.Println(debug.SetGCPercent(1))
+	debug.SetGCPercent(1)
 	if len(os.Args) == 2 {
 		filename := os.Args[1]
 		start := time.Now()

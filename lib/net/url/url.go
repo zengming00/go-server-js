@@ -5,6 +5,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _url struct {
@@ -35,14 +36,8 @@ func (This *_url) queryEscape(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_url) queryUnescape(call goja.FunctionCall) goja.Value {
-	retVal := This.runtime.NewObject()
 	str, err := url.QueryUnescape(call.Argument(0).String())
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", str)
-	return retVal
+	return lib.MakeReturnValue(This.runtime, str, err)
 }
 
 func (This *_url) newValues(call goja.FunctionCall) goja.Value {

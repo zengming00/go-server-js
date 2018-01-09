@@ -1,10 +1,10 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dop251/goja"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _resp struct {
@@ -18,7 +18,6 @@ func (This *_resp) header(call goja.FunctionCall) goja.Value {
 
 func (This *_resp) write(call goja.FunctionCall) goja.Value {
 	p1 := call.Argument(0).Export()
-	retVal := This.runtime.NewObject()
 
 	var data []byte
 	switch t := p1.(type) {
@@ -31,25 +30,18 @@ func (This *_resp) write(call goja.FunctionCall) goja.Value {
 					continue
 				}
 			}
-			retVal.Set("err", fmt.Sprintf("response.write() can not convert to byte `data[%d] = %v`", i, v))
-			return retVal
+			panic(This.runtime.NewTypeError("can not convert to byte `data[%d] = %v`", i, v))
 		}
 	case []byte:
 		data = t
 	case string:
 		data = []byte(t)
 	default:
-		retVal.Set("err", "response.write() data is not a byte array or string")
-		return retVal
+		panic(This.runtime.NewTypeError("data is not a byte array or string %T", t))
 	}
 
 	n, err := This.w.Write(data)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", n)
-	return retVal
+	return lib.MakeReturnValue(This.runtime, n, err)
 }
 
 func (This *_resp) writeHeader(call goja.FunctionCall) goja.Value {

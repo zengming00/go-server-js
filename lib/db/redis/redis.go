@@ -4,6 +4,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/garyburd/redigo/redis"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _redis struct {
@@ -12,14 +13,8 @@ type _redis struct {
 
 func (This *_redis) stringFunc(call goja.FunctionCall) goja.Value {
 	repl := call.Argument(0).Export()
-	retVal := This.runtime.NewObject()
 	str, err := redis.String(repl, nil)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", str)
-	return retVal
+	return lib.MakeReturnValue(This.runtime, str, err)
 }
 
 func (This *_redis) dial(call goja.FunctionCall) goja.Value {

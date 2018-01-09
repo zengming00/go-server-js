@@ -19,13 +19,13 @@ func (This *_image) rect(call goja.FunctionCall) goja.Value {
 	y1 := int(call.Argument(3).ToInteger())
 	// TODO
 	rect := image.Rect(x0, y0, x1, y1)
-	return This.runtime.ToValue(&rect)
+	return This.runtime.ToValue(rect)
 }
 
 func (This *_image) newRGBA(call goja.FunctionCall) goja.Value {
 	r := call.Argument(0).Export()
-	if rect, ok := r.(*image.Rectangle); ok {
-		rgba := image.NewRGBA(*rect)
+	if rect, ok := r.(image.Rectangle); ok {
+		rgba := image.NewRGBA(rect)
 		return This.runtime.ToValue(NewRGBA(This.runtime, rgba))
 	}
 	panic(This.runtime.NewTypeError("p0 is not a Rectangle type"))

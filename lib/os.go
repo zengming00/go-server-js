@@ -17,14 +17,8 @@ func (This *_os) tempDir(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_os) hostname(call goja.FunctionCall) goja.Value {
-	retVal := This.runtime.NewObject()
 	name, err := os.Hostname()
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", name)
-	return retVal
+	return MakeReturnValue(This.runtime, name, err)
 }
 
 func (This *_os) getEnv(call goja.FunctionCall) goja.Value {
@@ -72,14 +66,8 @@ func (This *_os) mkdirAll(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_os) getwd(call goja.FunctionCall) goja.Value {
-	retVal := This.runtime.NewObject()
 	dir, err := os.Getwd()
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", dir)
-	return retVal
+	return MakeReturnValue(This.runtime, dir, err)
 }
 
 func (This *_os) chdir(call goja.FunctionCall) goja.Value {
@@ -99,7 +87,7 @@ func (This *_os) openFile(call goja.FunctionCall) goja.Value {
 	// todo file
 	return This.runtime.ToValue(map[string]interface{}{
 		"value": file,
-		"err":  err,
+		"err":   err,
 	})
 }
 
@@ -116,6 +104,19 @@ func (This *_os) create(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
+func (This *_os) open(call goja.FunctionCall) goja.Value {
+	name := call.Argument(0).String()
+	retVal := This.runtime.NewObject()
+
+	file, err := os.Open(name)
+	if err != nil {
+		retVal.Set("err", err.Error())
+		return retVal
+	}
+	retVal.Set("value", NewFile(This.runtime, file))
+	return retVal
+}
+
 func init() {
 	require.RegisterNativeModule("os", func(runtime *goja.Runtime, module *goja.Object) {
 		This := &_os{
@@ -124,9 +125,16 @@ func init() {
 		o := module.Get("exports").(*goja.Object)
 		o.Set("O_CREATE", os.O_CREATE)
 		o.Set("O_WRONLY", os.O_WRONLY)
+		o.Set("O_RDONLY", os.O_RDONLY)
+		o.Set("O_RDWR", os.O_RDWR)
+		o.Set("O_APPEND", os.O_APPEND)
+		o.Set("O_EXCL", os.O_EXCL)
+		o.Set("O_SYNC", os.O_SYNC)
+		o.Set("O_TRUNC", os.O_TRUNC)
 
 		o.Set("create", This.create)
 		o.Set("openFile", This.openFile)
+		o.Set("open", This.open)
 		o.Set("args", os.Args)
 		o.Set("getEnv", This.getEnv)
 		o.Set("tempDir", This.tempDir)

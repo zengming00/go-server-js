@@ -6,6 +6,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/zengming00/go-server-js/lib/net/url"
+	"github.com/zengming00/go-server-js/lib"
 )
 
 type _req struct {
@@ -22,6 +23,7 @@ func (This *_req) formValue(call goja.FunctionCall) goja.Value {
 func (This *_req) formFile(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
 	file, fileHeader, err := This.r.FormFile(key)
+	// todo
 	retVal := map[string]interface{}{
 		"file":   file,
 		"name":   fileHeader.Filename,
@@ -77,17 +79,7 @@ func (This *_req) cookies(call goja.FunctionCall) goja.Value {
 
 func (This *_req) getRawBody(call goja.FunctionCall) goja.Value {
 	bts, err := ioutil.ReadAll(This.r.Body)
-	// retVal := This.runtime.NewObject()
-	// if err != nil {
-	// 	retVal.Set("err", err.Error())
-	// 	return retVal
-	// }
-	// retVal.Set("value", bts)
-	// return retVal
-	return This.runtime.ToValue(map[string]interface{}{
-		"err":   err,
-		"value": bts,
-	})
+	return lib.MakeReturnValue(This.runtime, bts, err)
 }
 
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {

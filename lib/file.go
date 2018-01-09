@@ -28,14 +28,8 @@ func (This *_file) write(call goja.FunctionCall) goja.Value {
 
 func (This *_file) read(call goja.FunctionCall) goja.Value {
 	filename := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
 	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", data)
-	return retVal
+	return MakeReturnValue(This.runtime, data, err)
 }
 
 func (This *_file) close(call goja.FunctionCall) goja.Value {
@@ -52,15 +46,8 @@ func (This *_file) getPrototype(call goja.FunctionCall) goja.Value {
 
 func (This *_file) writeString(call goja.FunctionCall) goja.Value {
 	s := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
-
 	n, err := This.file.WriteString(s)
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", n)
-	return retVal
+	return MakeReturnValue(This.runtime, n, err)
 }
 
 func NewFile(runtime *goja.Runtime, file *os.File) *goja.Object {

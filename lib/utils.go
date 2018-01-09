@@ -23,6 +23,17 @@ func GetAllArgs(call *goja.FunctionCall) []interface{} {
 	return args
 }
 
+// value只能是原始类型
+func MakeReturnValue(runtime *goja.Runtime, value interface{}, err error) *goja.Object {
+	retVal := runtime.NewObject()
+	if err != nil {
+		retVal.Set("err", err.Error())
+		return retVal
+	}
+	retVal.Set("value", value)
+	return retVal
+}
+
 func (This *_utils) print(call goja.FunctionCall) goja.Value {
 	fmt.Print(call.Argument(0).String())
 	return nil
