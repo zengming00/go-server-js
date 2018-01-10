@@ -5,7 +5,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/zengming00/go-server-js/nodejs/require"
-	_ "github.com/dop251/goja_nodejs/util"
+	_ "github.com/zengming00/go-server-js/nodejs/util"
 )
 
 type Console struct {
