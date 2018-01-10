@@ -45,7 +45,6 @@ func (This *_db) close(call goja.FunctionCall) goja.Value {
 
 func (This *_db) exec(call goja.FunctionCall) goja.Value {
 	args := lib.GetAllArgs(&call)
-	retVal := This.runtime.NewObject()
 
 	if query, ok := args[0].(string); ok {
 		var result sql.Result
@@ -56,14 +55,15 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 			result, err = This.db.Exec(query, args[1:]...)
 		}
 		if err != nil {
-			retVal.Set("err", err.Error())
-			return retVal
+			return This.runtime.ToValue(map[string]interface{}{
+				"err": err.Error(),
+			})
 		}
-		retVal.Set("value", NewResult(This.runtime, result))
-	} else {
-		retVal.Set("err", "p0 is not a string")
+		return This.runtime.ToValue(map[string]interface{}{
+			"value": NewResult(This.runtime, result),
+		})
 	}
-	return retVal
+	panic(This.runtime.NewTypeError("p0 is not a string"))
 }
 
 func (This *_db) prepare(call goja.FunctionCall) goja.Value {

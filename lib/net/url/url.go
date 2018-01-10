@@ -4,7 +4,7 @@ import (
 	"net/url"
 
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
+	"github.com/zengming00/go-server-js/nodejs/require"
 	"github.com/zengming00/go-server-js/lib"
 )
 

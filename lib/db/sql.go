@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
+	"github.com/zengming00/go-server-js/nodejs/require"
 )
 
 type _sql struct {
