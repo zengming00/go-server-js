@@ -50,9 +50,7 @@ func (This *_png) encode(call goja.FunctionCall) goja.Value {
 }
 
 func init() {
-	// TODO require存在bug windows 下不能使用/
-	// require.RegisterNativeModule("image/png", func(runtime *goja.Runtime, module *goja.Object) {
-	require.RegisterNativeModule("png", func(runtime *goja.Runtime, module *goja.Object) {
+	require.RegisterNativeModule("image/png", func(runtime *goja.Runtime, module *goja.Object) {
 		This := &_png{
 			runtime: runtime,
 		}

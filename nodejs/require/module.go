@@ -49,6 +49,9 @@ func (r *Registry) Enable(runtime *js.Runtime) *RequireModule {
 	}
 
 	runtime.Set("require", rrt.require)
+	runtime.Set("require_list", rrt.list)
+	runtime.Set("require_set", rrt.set)
+	runtime.Set("require_get", rrt.get)
 	return rrt
 }
 
@@ -108,6 +111,25 @@ func (r *RequireModule) loadModule(path string, jsModule *js.Object) error {
 		return InvalidModuleError
 	}
 
+	return nil
+}
+
+func (r *RequireModule) list(call js.FunctionCall) js.Value {
+	return r.runtime.ToValue(r.modules)
+}
+
+func (r *RequireModule) set(call js.FunctionCall) js.Value {
+	key := call.Argument(0).String()
+	value := call.Argument(1).ToObject(r.runtime)
+	r.modules[key] = value
+	return nil
+}
+
+func (r *RequireModule) get(call js.FunctionCall) js.Value {
+	key := call.Argument(0).String()
+	if v, ok := r.modules[key]; ok {
+		return r.runtime.ToValue(v)
+	}
 	return nil
 }
 

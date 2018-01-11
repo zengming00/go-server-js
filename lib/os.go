@@ -120,6 +120,37 @@ func (This *_os) open(call goja.FunctionCall) goja.Value {
 	return retVal
 }
 
+func (This *_os) stat(call goja.FunctionCall) goja.Value {
+	name := call.Argument(0).String()
+	fileInfo, err := os.Stat(name)
+	if err != nil {
+		return This.runtime.ToValue(map[string]interface{}{
+			"err": err.Error(),
+		})
+	}
+	// todo
+	return This.runtime.ToValue(map[string]interface{}{
+		"value": fileInfo,
+	})
+}
+
+func (This *_os) isExist(call goja.FunctionCall) goja.Value {
+	// todo error type
+	p0 := call.Argument(0).Export()
+	if err, ok := p0.(error); ok {
+		return This.runtime.ToValue(os.IsExist(err))
+	}
+	panic(This.runtime.NewTypeError("p0 is not error type:%T", p0))
+}
+
+func (This *_os) isNotExist(call goja.FunctionCall) goja.Value {
+	p0 := call.Argument(0).Export()
+	if err, ok := p0.(error); ok {
+		return This.runtime.ToValue(os.IsNotExist(err))
+	}
+	panic(This.runtime.NewTypeError("p0 is not error type:%T", p0))
+}
+
 func init() {
 	require.RegisterNativeModule("os", func(runtime *goja.Runtime, module *goja.Object) {
 		This := &_os{
@@ -148,5 +179,8 @@ func init() {
 		o.Set("mkdirAll", This.mkdirAll)
 		o.Set("remove", This.remove)
 		o.Set("removeAll", This.removeAll)
+		o.Set("stat", This.stat)
+		o.Set("isExist", This.isExist)
+		o.Set("isNotExist", This.isNotExist)
 	})
 }
