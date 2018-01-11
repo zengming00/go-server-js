@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -23,10 +24,12 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/dop251/goja"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/zengming00/go-server-js/nodejs/console"
 	"github.com/zengming00/go-server-js/nodejs/require"
-	_ "github.com/go-sql-driver/mysql"
 )
+
+var configFile = flag.String("config", "config.json", "set the config.json")
 
 var _cwd string
 var _sessionMgr *SessionMgr
@@ -116,7 +119,7 @@ func server() {
 		},
 	}
 
-	initConfig("config.json", s.config)
+	initConfig(*configFile, s.config)
 
 	if s.config.WorkDir != nil {
 		err := os.Chdir(*s.config.WorkDir)
@@ -147,6 +150,7 @@ func server() {
 }
 
 func main() {
+	flag.Parse()
 	debug.SetGCPercent(1)
 	if len(os.Args) == 2 {
 		filename := os.Args[1]
