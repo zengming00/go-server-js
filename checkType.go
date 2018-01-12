@@ -24,6 +24,9 @@ var validType = []reflect.Kind{
 }
 
 func IsValidType(val interface{}) bool {
+	if val == nil {
+		return true
+	}
 	k := reflect.TypeOf(val).Kind()
 	for _, v := range validType {
 		if v == k {

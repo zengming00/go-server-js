@@ -132,11 +132,10 @@ func (This *_cache) set(call goja.FunctionCall) goja.Value {
 
 func (This *_cache) get(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
-	value, ok := This.cacheMgr.Get(key)
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": value,
-		"ok":    ok,
-	})
+	if value, ok := This.cacheMgr.Get(key); ok {
+		return This.runtime.ToValue(value)
+	}
+	return goja.Null()
 }
 
 func (This *_cache) del(call goja.FunctionCall) goja.Value {
