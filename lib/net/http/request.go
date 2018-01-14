@@ -98,6 +98,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o.Set("header", NewHeader(runtime, r.Header))
 	o.Set("headers", map[string][]string(r.Header))
 	o.Set("uri", r.RequestURI)
+	o.Set("url", url.NewURL(runtime, r.URL))	
 	o.Set("remoteAddr", r.RemoteAddr)
 	o.Set("form", url.NewValues(runtime, r.Form))
 

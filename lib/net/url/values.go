@@ -41,6 +41,10 @@ func (This *_values) gets(call goja.FunctionCall) goja.Value {
 	return This.runtime.ToValue(values)
 }
 
+func (This *_values) getAll(call goja.FunctionCall) goja.Value {
+	return This.runtime.ToValue(map[string][]string(This.values))
+}
+
 func (This *_values) set(call goja.FunctionCall) goja.Value {
 	key := call.Argument(0).String()
 	value := call.Argument(1).String()
@@ -59,6 +63,7 @@ func NewValues(runtime *goja.Runtime, values url.Values) *goja.Object {
 	o.Set("encode", This.encode)
 	o.Set("get", This.get)
 	o.Set("gets", This.gets)
+	o.Set("getAll", This.getAll)
 	o.Set("set", This.set)
 	return o
 }
