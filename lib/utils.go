@@ -23,6 +23,19 @@ func GetAllArgs(call *goja.FunctionCall) []interface{} {
 	return args
 }
 
+func GetAllArgs_string(runtime *goja.Runtime, call *goja.FunctionCall) []string {
+	args := make([]string, len(call.Arguments))
+	for i, v := range call.Arguments {
+		vv := v.Export()
+		if s, ok := vv.(string); ok {
+			args[i] = s
+		} else {
+			panic(runtime.NewTypeError("arg[%d] is not a string: %T", i, v))
+		}
+	}
+	return args
+}
+
 // value只能是原始类型
 func MakeReturnValue(runtime *goja.Runtime, value interface{}, err error) *goja.Object {
 	retVal := runtime.NewObject()

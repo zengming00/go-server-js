@@ -20,6 +20,7 @@ import (
 	_ "github.com/zengming00/go-server-js/lib/image/png"
 	mhttp "github.com/zengming00/go-server-js/lib/net/http"
 	_ "github.com/zengming00/go-server-js/lib/net/url"
+	_ "github.com/zengming00/go-server-js/lib/path"
 
 	_ "net/http/pprof"
 
