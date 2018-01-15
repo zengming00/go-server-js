@@ -9,106 +9,118 @@ import (
 	"github.com/zengming00/go-server-js/lib/net/url"
 )
 
-type _req struct {
-	runtime *goja.Runtime
-	r       *http.Request
-}
-
-func (This *_req) formValue(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := This.r.FormValue(key)
-	return This.runtime.ToValue(value)
-}
-
-func (This *_req) formFile(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	file, fileHeader, err := This.r.FormFile(key)
-	if err != nil {
-		return This.runtime.ToValue(map[string]interface{}{
-			"err": err.Error(),
-		})
-	}
-	return This.runtime.ToValue(map[string]interface{}{
-		"file":   NewMultipartFile(This.runtime, file),
-		"name":   fileHeader.Filename,
-		"header": map[string][]string(fileHeader.Header),
-	})
-}
-
-func (This *_req) userAgent(call goja.FunctionCall) goja.Value {
-	value := This.r.UserAgent()
-	return This.runtime.ToValue(value)
-}
-
-func (This *_req) parseForm(call goja.FunctionCall) goja.Value {
-	err := This.r.ParseForm()
-	if err != nil {
-		return This.runtime.ToValue(err.Error())
-	}
-	return nil
-}
-
-func (This *_req) parseMultipartForm(call goja.FunctionCall) goja.Value {
-	maxMemory := call.Argument(0).ToInteger()
-	err := This.r.ParseMultipartForm(maxMemory)
-	if err != nil {
-		return This.runtime.ToValue(err.Error())
-	}
-	return nil
-}
-
-func (This *_req) cookie(call goja.FunctionCall) goja.Value {
-	name := call.Argument(0).String()
-	c, err := This.r.Cookie(name)
-	if err != nil {
-		return This.runtime.ToValue(map[string]interface{}{
-			"err": err.Error(),
-		})
-	}
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": NewCookie(This.runtime, c),
-	})
-}
-
-func (This *_req) cookies(call goja.FunctionCall) goja.Value {
-	cks := This.r.Cookies()
-	arr := make([]*goja.Object, len(cks))
-	for i, v := range cks {
-		arr[i] = NewCookie(This.runtime, v)
-	}
-	return This.runtime.ToValue(arr)
-}
-
-func (This *_req) getRawBody(call goja.FunctionCall) goja.Value {
-	bts, err := ioutil.ReadAll(This.r.Body)
-	return lib.MakeReturnValue(This.runtime, bts, err)
-}
-
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
-	This := &_req{
-		runtime: runtime,
-		r:       r,
-	}
-
 	o := runtime.NewObject()
-	o.Set("contentLength", r.ContentLength)
-	o.Set("method", r.Method)
-	o.Set("host", r.Host)
-	o.Set("body", r.Body)
-	o.Set("header", NewHeader(runtime, r.Header))
-	o.Set("headers", map[string][]string(r.Header))
-	o.Set("uri", r.RequestURI)
-	o.Set("url", url.NewURL(runtime, r.URL))	
-	o.Set("remoteAddr", r.RemoteAddr)
-	o.Set("form", url.NewValues(runtime, r.Form))
+	o.Set("getContentLength", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(r.ContentLength)
+	})
 
-	o.Set("formValue", This.formValue)
-	o.Set("formFile", This.formFile)
-	o.Set("userAgent", This.userAgent)
-	o.Set("parseForm", This.parseForm)
-	o.Set("parseMultipartForm", This.parseMultipartForm)
-	o.Set("cookie", This.cookie)
-	o.Set("cookies", This.cookies)
-	o.Set("getRawBody", This.getRawBody)
+	o.Set("getMethod", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(r.Method)
+	})
+
+	o.Set("getHost", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(r.Host)
+	})
+
+	o.Set("getBody", func(call goja.FunctionCall) goja.Value {
+		//todo
+		return runtime.ToValue(r.Body)
+	})
+
+	o.Set("getHeader", func(call goja.FunctionCall) goja.Value {
+		return NewHeader(runtime, r.Header)
+	})
+
+	o.Set("getHeaders", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(map[string][]string(r.Header))
+	})
+
+	o.Set("getUri", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(r.RequestURI)
+	})
+
+	o.Set("getUrl", func(call goja.FunctionCall) goja.Value {
+		return url.NewURL(runtime, r.URL)
+	})
+
+	o.Set("getRemoteAddr", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(r.RemoteAddr)
+	})
+
+	o.Set("getForm", func(call goja.FunctionCall) goja.Value {
+		return url.NewValues(runtime, r.Form)
+	})
+
+	o.Set("formValue", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := r.FormValue(key)
+		return runtime.ToValue(value)
+	})
+
+	o.Set("formFile", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		file, fileHeader, err := r.FormFile(key)
+		if err != nil {
+			return runtime.ToValue(map[string]interface{}{
+				"err": err.Error(),
+			})
+		}
+		return runtime.ToValue(map[string]interface{}{
+			"file":   NewMultipartFile(runtime, file),
+			"name":   fileHeader.Filename,
+			"header": map[string][]string(fileHeader.Header),
+		})
+	})
+
+	o.Set("userAgent", func(call goja.FunctionCall) goja.Value {
+		value := r.UserAgent()
+		return runtime.ToValue(value)
+	})
+
+	o.Set("parseForm", func(call goja.FunctionCall) goja.Value {
+		err := r.ParseForm()
+		if err != nil {
+			return runtime.ToValue(err.Error())
+		}
+		return nil
+	})
+
+	o.Set("parseMultipartForm", func(call goja.FunctionCall) goja.Value {
+		maxMemory := call.Argument(0).ToInteger()
+		err := r.ParseMultipartForm(maxMemory)
+		if err != nil {
+			return runtime.ToValue(err.Error())
+		}
+		return nil
+	})
+
+	o.Set("cookie", func(call goja.FunctionCall) goja.Value {
+		name := call.Argument(0).String()
+		c, err := r.Cookie(name)
+		if err != nil {
+			return runtime.ToValue(map[string]interface{}{
+				"err": err.Error(),
+			})
+		}
+		return runtime.ToValue(map[string]interface{}{
+			"value": NewCookie(runtime, c),
+		})
+	})
+
+	o.Set("cookies", func(call goja.FunctionCall) goja.Value {
+		cks := r.Cookies()
+		arr := make([]*goja.Object, len(cks))
+		for i, v := range cks {
+			arr[i] = NewCookie(runtime, v)
+		}
+		return runtime.ToValue(arr)
+	})
+
+	o.Set("getRawBody", func(call goja.FunctionCall) goja.Value {
+		bts, err := ioutil.ReadAll(r.Body)
+		return lib.MakeReturnValue(runtime, bts, err)
+	})
+
 	return o
 }

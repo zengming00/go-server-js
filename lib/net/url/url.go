@@ -10,12 +10,6 @@ import (
 
 type _url struct {
 	runtime *goja.Runtime
-	url     *url.URL
-}
-
-func (This *_url) port(call goja.FunctionCall) goja.Value {
-	str := This.url.Port()
-	return This.runtime.ToValue(str)
 }
 
 func (This *_url) parse(call goja.FunctionCall) goja.Value {
@@ -71,22 +65,44 @@ func (This *_url) newValues(call goja.FunctionCall) goja.Value {
 }
 
 func NewURL(runtime *goja.Runtime, u *url.URL) *goja.Object {
-	This := &_url{
-		runtime: runtime,
-		url:     u,
-	}
-	o := runtime.NewObject()
-	o.Set("forceQuery", u.ForceQuery)
-	o.Set("fragment", u.Fragment)
-	o.Set("host", u.Host)
-	o.Set("opaque", u.Opaque)
-	o.Set("path", u.Path)
-	o.Set("rawPath", u.RawPath)
-	o.Set("rawQuery", u.RawQuery)
-	o.Set("scheme", u.Scheme)
 	// TODO
-	// o.Set("", u.User)
-	o.Set("port", This.port)
+	o := runtime.NewObject()
+	o.Set("getForceQuery", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.ForceQuery)
+	})
+
+	o.Set("getFragment", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Fragment)
+	})
+
+	o.Set("getHost", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Host)
+	})
+
+	o.Set("getOpaque", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Opaque)
+	})
+
+	o.Set("getPath", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Path)
+	})
+
+	o.Set("getRawPath", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.RawPath)
+	})
+
+	o.Set("getRawQuery", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.RawQuery)
+	})
+
+	o.Set("getScheme", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Scheme)
+	})
+
+	o.Set("getPort", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(u.Port())
+	})
+
 	return o
 }
 

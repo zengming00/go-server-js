@@ -113,5 +113,19 @@ func init() {
 		o.Set("test", This.test)
 		o.Set("err", This.err)
 		o.Set("err2", This.err2)
+
+		o.Set("retNil", func(call goja.FunctionCall) goja.Value {
+			// nil 和 goja.Undefined() 效果相同，在js中都是undefined
+			return nil
+		})
+
+		o.Set("retNull", func(call goja.FunctionCall) goja.Value {
+			// 在js中是null
+			return goja.Null()
+		})
+
+		o.Set("retUndefined", func(call goja.FunctionCall) goja.Value {
+			return goja.Undefined()
+		})
 	})
 }
