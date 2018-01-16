@@ -15,6 +15,23 @@ type _utils struct {
 	runtime *goja.Runtime
 }
 
+func GetNativeType(runtime *goja.Runtime, call *goja.FunctionCall, idx int) interface{} {
+	return call.Argument(idx).ToObject(runtime).Get("nativeType").Export()
+}
+
+func GetGoType(runtime *goja.Runtime, call *goja.FunctionCall, idx int) goja.Value {
+	p := call.Argument(idx).ToObject(runtime)
+	protoFunc, ok := goja.AssertFunction(p.Get("getGoType"))
+	if !ok {
+		panic(runtime.NewTypeError("p%d not have getGoType() function", idx))
+	}
+	obj, err := protoFunc(p)
+	if err != nil {
+		panic(runtime.NewGoError(err))
+	}
+	return obj
+}
+
 func GetAllArgs(call *goja.FunctionCall) []interface{} {
 	args := make([]interface{}, len(call.Arguments))
 	for i, v := range call.Arguments {

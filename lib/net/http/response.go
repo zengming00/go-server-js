@@ -61,9 +61,7 @@ func NewResponse(runtime *goja.Runtime, w http.ResponseWriter) *goja.Object {
 		return nil
 	})
 
-	o.Set("getPrototype", func(call goja.FunctionCall) goja.Value {
-		return runtime.ToValue(w)
-	})
+	o.Set("nativeType", w)
 
 	return o
 }

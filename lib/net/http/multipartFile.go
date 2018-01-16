@@ -55,10 +55,6 @@ func (This *_multipartFile) close(call goja.FunctionCall) goja.Value {
 	return nil
 }
 
-func (This *_multipartFile) getPrototype(call goja.FunctionCall) goja.Value {
-	return This.runtime.ToValue(This.file)
-}
-
 func NewMultipartFile(runtime *goja.Runtime, file multipart.File) *goja.Object {
 	This := &_multipartFile{
 		runtime: runtime,
@@ -69,6 +65,7 @@ func NewMultipartFile(runtime *goja.Runtime, file multipart.File) *goja.Object {
 	o.Set("read", This.read)
 	o.Set("readAt", This.readAt)
 	o.Set("seek", This.seek)
-	o.Set("getPrototype", This.getPrototype)
+	o.Set("nativeType", file)
+
 	return o
 }

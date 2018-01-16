@@ -13,8 +13,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o := runtime.NewObject()
 
 	o.Set("isMissingFile", func(call goja.FunctionCall) goja.Value {
-		// todo get pro
-		p0 := call.Argument(0).Export()
+		p0 := lib.GetNativeType(runtime, &call, 0)
 		if err, ok := p0.(error); ok {
 			return runtime.ToValue(err == http.ErrMissingFile)
 		}

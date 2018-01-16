@@ -12,9 +12,9 @@ func NewError(runtime *goja.Runtime, err error) *goja.Object {
 	o.Set("error", func(call goja.FunctionCall) goja.Value {
 		return runtime.ToValue(err.Error())
 	})
-	o.Set("getPrototype", func(call goja.FunctionCall) goja.Value {
-		return runtime.ToValue(err)
-	})
+
+	o.Set("nativeType", err)
+
 	return o
 }
 

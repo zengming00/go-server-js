@@ -126,8 +126,7 @@ func (This *_os) stat(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_os) isExist(call goja.FunctionCall) goja.Value {
-	// todo error type
-	p0 := call.Argument(0).Export()
+	p0 := GetNativeType(This.runtime, &call, 0)
 	if err, ok := p0.(error); ok {
 		return This.runtime.ToValue(os.IsExist(err))
 	}
@@ -135,8 +134,7 @@ func (This *_os) isExist(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_os) isNotExist(call goja.FunctionCall) goja.Value {
-	// todo err
-	p0 := call.Argument(0).Export()
+	p0 := GetNativeType(This.runtime, &call, 0)
 	if err, ok := p0.(error); ok {
 		return This.runtime.ToValue(os.IsNotExist(err))
 	}
