@@ -30,21 +30,22 @@ func GetAllArgs_string(runtime *goja.Runtime, call *goja.FunctionCall) []string 
 		if s, ok := vv.(string); ok {
 			args[i] = s
 		} else {
-			panic(runtime.NewTypeError("arg[%d] is not a string: %T", i, v))
+			panic(runtime.NewTypeError("arg[%d] is not a string type:%T", i, v))
 		}
 	}
 	return args
 }
 
-// value只能是原始类型
-func MakeReturnValue(runtime *goja.Runtime, value interface{}, err error) *goja.Object {
-	retVal := runtime.NewObject()
-	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
-	}
-	retVal.Set("value", value)
-	return retVal
+func MakeReturnValue(runtime *goja.Runtime, value interface{}) goja.Value {
+	return runtime.ToValue(map[string]interface{}{
+		"value": value,
+	})
+}
+
+func MakeErrorValue(runtime *goja.Runtime, err error) goja.Value {
+	return runtime.ToValue(map[string]interface{}{
+		"err": NewError(runtime, err),
+	})
 }
 
 func (This *_utils) print(call goja.FunctionCall) goja.Value {
@@ -61,7 +62,7 @@ func (This *_utils) toString(call goja.FunctionCall) goja.Value {
 	if bts, ok := data.([]byte); ok {
 		return This.runtime.ToValue(string(bts))
 	}
-	panic(This.runtime.NewTypeError("data is not a byte array"))
+	panic(This.runtime.NewTypeError("p0 is not []byte type:%T", data))
 }
 
 func (This *_utils) toBase64(call goja.FunctionCall) goja.Value {
@@ -73,7 +74,7 @@ func (This *_utils) toBase64(call goja.FunctionCall) goja.Value {
 	case string:
 		str = base64.StdEncoding.EncodeToString([]byte(data))
 	default:
-		panic(This.runtime.NewTypeError("data is not a byte array or string"))
+		panic(This.runtime.NewTypeError("p0 is not []byte or string type:%T", p0))
 	}
 	return This.runtime.ToValue(str)
 }
@@ -89,7 +90,7 @@ func (This *_utils) md5(call goja.FunctionCall) goja.Value {
 		tmp := md5.Sum([]byte(data))
 		r = tmp[:]
 	default:
-		panic(This.runtime.NewTypeError("data is not a byte array or string"))
+		panic(This.runtime.NewTypeError("p0 is not []byte or string type:%T", p0))
 	}
 	return This.runtime.ToValue(hex.EncodeToString(r))
 }
@@ -105,7 +106,7 @@ func (This *_utils) sha1(call goja.FunctionCall) goja.Value {
 		tmp := sha1.Sum([]byte(data))
 		r = tmp[:]
 	default:
-		panic(This.runtime.NewTypeError("data is not a byte array or string"))
+		panic(This.runtime.NewTypeError("p0 is not []byte or string type:%T", p0))
 	}
 	return This.runtime.ToValue(hex.EncodeToString(r))
 }

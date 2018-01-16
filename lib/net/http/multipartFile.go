@@ -16,9 +16,12 @@ func (This *_multipartFile) read(call goja.FunctionCall) goja.Value {
 	p0 := call.Argument(0).Export()
 	if buf, ok := p0.([]byte); ok {
 		n, err := This.file.Read(buf)
-		return lib.MakeReturnValue(This.runtime, n, err)
+		if err != nil {
+			return lib.MakeErrorValue(This.runtime, err)
+		}
+		return lib.MakeReturnValue(This.runtime, n)
 	}
-	panic(This.runtime.NewTypeError("p0 is not a []byte"))
+	panic(This.runtime.NewTypeError("p0 is not []byte type:%T", p0))
 }
 
 func (This *_multipartFile) readAt(call goja.FunctionCall) goja.Value {
@@ -26,22 +29,28 @@ func (This *_multipartFile) readAt(call goja.FunctionCall) goja.Value {
 	off := call.Argument(1).ToInteger()
 	if buf, ok := p0.([]byte); ok {
 		n, err := This.file.ReadAt(buf, off)
-		return lib.MakeReturnValue(This.runtime, n, err)
+		if err != nil {
+			return lib.MakeErrorValue(This.runtime, err)
+		}
+		return lib.MakeReturnValue(This.runtime, n)
 	}
-	panic(This.runtime.NewTypeError("p0 is not a []byte"))
+	panic(This.runtime.NewTypeError("p0 is not []byte type:%T", p0))
 }
 
 func (This *_multipartFile) seek(call goja.FunctionCall) goja.Value {
 	offset := call.Argument(0).ToInteger()
 	whence := call.Argument(1).ToInteger()
 	v, err := This.file.Seek(offset, int(whence))
-	return lib.MakeReturnValue(This.runtime, v, err)
+	if err != nil {
+		return lib.MakeErrorValue(This.runtime, err)
+	}
+	return lib.MakeReturnValue(This.runtime, v)
 }
 
 func (This *_multipartFile) close(call goja.FunctionCall) goja.Value {
 	err := This.file.Close()
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return lib.MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }

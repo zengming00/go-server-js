@@ -14,8 +14,6 @@ type _db struct {
 
 func (This *_db) query(call goja.FunctionCall) goja.Value {
 	args := lib.GetAllArgs(&call)
-	retVal := This.runtime.NewObject()
-
 	if query, ok := args[0].(string); ok {
 		var rows *sql.Rows
 		var err error
@@ -25,20 +23,17 @@ func (This *_db) query(call goja.FunctionCall) goja.Value {
 			rows, err = This.db.Query(query, args[1:]...)
 		}
 		if err != nil {
-			retVal.Set("err", err.Error())
-			return retVal
+			return lib.MakeErrorValue(This.runtime, err)
 		}
-		retVal.Set("value", NewRows(This.runtime, rows))
-	} else {
-		retVal.Set("err", "p0 is not a string")
+		return lib.MakeReturnValue(This.runtime, NewRows(This.runtime, rows))
 	}
-	return retVal
+	panic(This.runtime.NewTypeError("p0 is not a string type:%T", args[0]))
 }
 
 func (This *_db) close(call goja.FunctionCall) goja.Value {
 	err := This.db.Close()
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return lib.MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -55,27 +50,20 @@ func (This *_db) exec(call goja.FunctionCall) goja.Value {
 			result, err = This.db.Exec(query, args[1:]...)
 		}
 		if err != nil {
-			return This.runtime.ToValue(map[string]interface{}{
-				"err": err.Error(),
-			})
+			return lib.MakeErrorValue(This.runtime, err)
 		}
-		return This.runtime.ToValue(map[string]interface{}{
-			"value": NewResult(This.runtime, result),
-		})
+		return lib.MakeReturnValue(This.runtime, NewResult(This.runtime, result))
 	}
-	panic(This.runtime.NewTypeError("p0 is not a string"))
+	panic(This.runtime.NewTypeError("p0 is not a string type:%T", args[0]))
 }
 
 func (This *_db) prepare(call goja.FunctionCall) goja.Value {
 	query := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
 	stmt, err := This.db.Prepare(query)
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return lib.MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewStmt(This.runtime, stmt))
-	return retVal
+	return lib.MakeReturnValue(This.runtime, NewStmt(This.runtime, stmt))
 }
 
 func (This *_db) stats(call goja.FunctionCall) goja.Value {
@@ -86,14 +74,11 @@ func (This *_db) stats(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_db) begin(call goja.FunctionCall) goja.Value {
-	retVal := This.runtime.NewObject()
 	tx, err := This.db.Begin()
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return lib.MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewTx(This.runtime, tx))
-	return retVal
+	return lib.MakeReturnValue(This.runtime, NewTx(This.runtime, tx))
 }
 
 func (This *_db) setMaxOpenConns(call goja.FunctionCall) goja.Value {

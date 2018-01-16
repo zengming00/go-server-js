@@ -6,55 +6,47 @@ import (
 	"io"
 
 	"github.com/dop251/goja"
+	"github.com/zengming00/go-server-js/lib"
 	"github.com/zengming00/go-server-js/nodejs/require"
 )
 
-type _png struct {
-	runtime *goja.Runtime
-}
-
-func (This *_png) encode(call goja.FunctionCall) goja.Value {
-	p0 := call.Argument(0).ToObject(This.runtime)
-	p1 := call.Argument(1).ToObject(This.runtime)
-
-	wproto, ok := goja.AssertFunction(p0.Get("getPrototype"))
-	if !ok {
-		panic(This.runtime.NewTypeError("p0 not have getPrototype() function"))
-	}
-	wo, err := wproto(p0)
-	if err != nil {
-		panic(This.runtime.NewGoError(err))
-	}
-	w, ok := wo.Export().(io.Writer)
-	if !ok {
-		panic(This.runtime.NewTypeError("p0 can not convert to io.Writer"))
-	}
-
-	mproto, ok := goja.AssertFunction(p1.Get("getPrototype"))
-	if !ok {
-		panic(This.runtime.NewTypeError("p1 not have getPrototype() function"))
-	}
-	mo, err := mproto(p1)
-	if err != nil {
-		panic(This.runtime.NewGoError(err))
-	}
-	m, ok := mo.Export().(image.Image)
-	if !ok {
-		panic(This.runtime.NewTypeError("p0 can not convert to image.Image"))
-	}
-	err = png.Encode(w, m)
-	if err != nil {
-		return This.runtime.ToValue(err.Error())
-	}
-	return nil
-}
-
 func init() {
 	require.RegisterNativeModule("image/png", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &_png{
-			runtime: runtime,
-		}
 		o := module.Get("exports").(*goja.Object)
-		o.Set("encode", This.encode)
+		o.Set("encode", func(call goja.FunctionCall) goja.Value {
+			p0 := call.Argument(0).ToObject(runtime)
+			p1 := call.Argument(1).ToObject(runtime)
+
+			wproto, ok := goja.AssertFunction(p0.Get("getPrototype"))
+			if !ok {
+				panic(runtime.NewTypeError("p0 not have getPrototype() function"))
+			}
+			wo, err := wproto(p0)
+			if err != nil {
+				panic(runtime.NewGoError(err))
+			}
+			w, ok := wo.Export().(io.Writer)
+			if !ok {
+				panic(runtime.NewTypeError("p0 is not io.Writer type:%T", wo.Export()))
+			}
+
+			mproto, ok := goja.AssertFunction(p1.Get("getPrototype"))
+			if !ok {
+				panic(runtime.NewTypeError("p1 not have getPrototype() function"))
+			}
+			mo, err := mproto(p1)
+			if err != nil {
+				panic(runtime.NewGoError(err))
+			}
+			m, ok := mo.Export().(image.Image)
+			if !ok {
+				panic(runtime.NewTypeError("p1 is not image.Image type:%T", mo.Export()))
+			}
+			err = png.Encode(w, m)
+			if err != nil {
+				return lib.MakeErrorValue(runtime, err)
+			}
+			return nil
+		})
 	})
 }

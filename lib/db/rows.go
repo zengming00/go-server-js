@@ -17,7 +17,7 @@ type _rows struct {
 func (This *_rows) err(call goja.FunctionCall) goja.Value {
 	err := This.rows.Err()
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return lib.MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (This *_rows) scan(call goja.FunctionCall) goja.Value {
 	args := lib.GetAllArgs(&call)
 	err := This.rows.Scan(args...)
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return lib.MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -89,7 +89,7 @@ func (This *_rows) next(call goja.FunctionCall) goja.Value {
 func (This *_rows) close(call goja.FunctionCall) goja.Value {
 	err := This.rows.Close()
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return lib.MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }

@@ -18,7 +18,10 @@ func (This *_os) tempDir(call goja.FunctionCall) goja.Value {
 
 func (This *_os) hostname(call goja.FunctionCall) goja.Value {
 	name, err := os.Hostname()
-	return MakeReturnValue(This.runtime, name, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, name)
 }
 
 func (This *_os) getEnv(call goja.FunctionCall) goja.Value {
@@ -31,7 +34,7 @@ func (This *_os) remove(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	err := os.Remove(name)
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -40,7 +43,7 @@ func (This *_os) removeAll(call goja.FunctionCall) goja.Value {
 	path := call.Argument(0).String()
 	err := os.RemoveAll(path)
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -50,7 +53,7 @@ func (This *_os) mkdir(call goja.FunctionCall) goja.Value {
 	perm := call.Argument(1).ToInteger()
 	err := os.Mkdir(name, os.FileMode(perm))
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -60,21 +63,24 @@ func (This *_os) mkdirAll(call goja.FunctionCall) goja.Value {
 	perm := call.Argument(1).ToInteger()
 	err := os.MkdirAll(path, os.FileMode(perm))
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
 
 func (This *_os) getwd(call goja.FunctionCall) goja.Value {
 	dir, err := os.Getwd()
-	return MakeReturnValue(This.runtime, dir, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, dir)
 }
 
 func (This *_os) chdir(call goja.FunctionCall) goja.Value {
 	dir := call.Argument(0).String()
 	err := os.Chdir(dir)
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -84,54 +90,39 @@ func (This *_os) openFile(call goja.FunctionCall) goja.Value {
 	flag := call.Argument(1).ToInteger()
 	perm := call.Argument(2).ToInteger()
 
-	retVal := This.runtime.NewObject()
 	file, err := os.OpenFile(name, int(flag), os.FileMode(perm))
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewFile(This.runtime, file))
-	return retVal
+	return MakeReturnValue(This.runtime, NewFile(This.runtime, file))
 }
 
 func (This *_os) create(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
-
 	file, err := os.Create(name)
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewFile(This.runtime, file))
-	return retVal
+	return MakeReturnValue(This.runtime, NewFile(This.runtime, file))
 }
 
 func (This *_os) open(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
-
 	file, err := os.Open(name)
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewFile(This.runtime, file))
-	return retVal
+	return MakeReturnValue(This.runtime, NewFile(This.runtime, file))
 }
 
 func (This *_os) stat(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	fileInfo, err := os.Stat(name)
 	if err != nil {
-		return This.runtime.ToValue(map[string]interface{}{
-			"err": err.Error(),
-		})
+		return MakeErrorValue(This.runtime, err)
 	}
 	// todo
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": fileInfo,
-	})
+	return MakeReturnValue(This.runtime, fileInfo)
 }
 
 func (This *_os) isExist(call goja.FunctionCall) goja.Value {
@@ -144,6 +135,7 @@ func (This *_os) isExist(call goja.FunctionCall) goja.Value {
 }
 
 func (This *_os) isNotExist(call goja.FunctionCall) goja.Value {
+	// todo err
 	p0 := call.Argument(0).Export()
 	if err, ok := p0.(error); ok {
 		return This.runtime.ToValue(os.IsNotExist(err))

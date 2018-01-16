@@ -14,7 +14,10 @@ func init() {
 		o.Set("abs", func(call goja.FunctionCall) goja.Value {
 			path := call.Argument(0).String()
 			str, err := filepath.Abs(path)
-			return lib.MakeReturnValue(runtime, str, err)
+			if err != nil {
+				return lib.MakeErrorValue(runtime, err)
+			}
+			return lib.MakeReturnValue(runtime, str)
 		})
 
 		o.Set("join", func(call goja.FunctionCall) goja.Value {

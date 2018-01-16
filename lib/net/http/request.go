@@ -11,6 +11,16 @@ import (
 
 func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o := runtime.NewObject()
+
+	o.Set("isMissingFile", func(call goja.FunctionCall) goja.Value {
+		// todo get pro
+		p0 := call.Argument(0).Export()
+		if err, ok := p0.(error); ok {
+			return runtime.ToValue(err == http.ErrMissingFile)
+		}
+		panic(runtime.NewTypeError("p0 is not error type:%T", p0))
+	})
+
 	o.Set("getContentLength", func(call goja.FunctionCall) goja.Value {
 		return runtime.ToValue(r.ContentLength)
 	})
@@ -62,9 +72,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 		key := call.Argument(0).String()
 		file, fileHeader, err := r.FormFile(key)
 		if err != nil {
-			return runtime.ToValue(map[string]interface{}{
-				"err": err.Error(),
-			})
+			return lib.MakeErrorValue(runtime, err)
 		}
 		return runtime.ToValue(map[string]interface{}{
 			"file":   NewMultipartFile(runtime, file),
@@ -81,7 +89,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 	o.Set("parseForm", func(call goja.FunctionCall) goja.Value {
 		err := r.ParseForm()
 		if err != nil {
-			return runtime.ToValue(err.Error())
+			return lib.MakeErrorValue(runtime, err)
 		}
 		return nil
 	})
@@ -90,7 +98,7 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 		maxMemory := call.Argument(0).ToInteger()
 		err := r.ParseMultipartForm(maxMemory)
 		if err != nil {
-			return runtime.ToValue(err.Error())
+			return lib.MakeErrorValue(runtime, err)
 		}
 		return nil
 	})
@@ -99,13 +107,9 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 		name := call.Argument(0).String()
 		c, err := r.Cookie(name)
 		if err != nil {
-			return runtime.ToValue(map[string]interface{}{
-				"err": err.Error(),
-			})
+			return lib.MakeErrorValue(runtime, err)
 		}
-		return runtime.ToValue(map[string]interface{}{
-			"value": NewCookie(runtime, c),
-		})
+		return lib.MakeReturnValue(runtime, NewCookie(runtime, c))
 	})
 
 	o.Set("cookies", func(call goja.FunctionCall) goja.Value {
@@ -119,7 +123,10 @@ func NewRequest(runtime *goja.Runtime, r *http.Request) *goja.Object {
 
 	o.Set("getRawBody", func(call goja.FunctionCall) goja.Value {
 		bts, err := ioutil.ReadAll(r.Body)
-		return lib.MakeReturnValue(runtime, bts, err)
+		if err != nil {
+			return lib.MakeErrorValue(runtime, err)
+		}
+		return lib.MakeReturnValue(runtime, bts)
 	})
 
 	return o

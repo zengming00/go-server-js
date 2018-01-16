@@ -14,10 +14,10 @@ func NewResponse(runtime *goja.Runtime, w http.ResponseWriter) *goja.Object {
 	})
 
 	o.Set("write", func(call goja.FunctionCall) goja.Value {
-		p1 := call.Argument(0).Export()
+		p0 := call.Argument(0).Export()
 
 		var data []byte
-		switch t := p1.(type) {
+		switch t := p0.(type) {
 		case []interface{}:
 			data = make([]byte, len(t))
 			for i, v := range t {
@@ -27,18 +27,21 @@ func NewResponse(runtime *goja.Runtime, w http.ResponseWriter) *goja.Object {
 						continue
 					}
 				}
-				panic(runtime.NewTypeError("can not convert to byte `data[%d] = %v`", i, v))
+				panic(runtime.NewTypeError("can not convert to byte `data[%d]:%T`", i, v))
 			}
 		case []byte:
 			data = t
 		case string:
 			data = []byte(t)
 		default:
-			panic(runtime.NewTypeError("data is not a byte array or string %T", t))
+			panic(runtime.NewTypeError("data is not a []byte or string type:%T", t))
 		}
 
 		n, err := w.Write(data)
-		return lib.MakeReturnValue(runtime, n, err)
+		if err != nil {
+			return lib.MakeErrorValue(runtime, err)
+		}
+		return lib.MakeReturnValue(runtime, n)
 	})
 
 	o.Set("writeHeader", func(call goja.FunctionCall) goja.Value {

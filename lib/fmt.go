@@ -22,13 +22,19 @@ func (This *_fmt) printf(call goja.FunctionCall) goja.Value {
 	format := call.Argument(0).String()
 	args := GetAllArgs(&call)
 	n, err := fmt.Printf(format, args[1:]...)
-	return MakeReturnValue(This.runtime, n, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, n)
 }
 
 func (This *_fmt) println(call goja.FunctionCall) goja.Value {
 	args := GetAllArgs(&call)
 	n, err := fmt.Println(args...)
-	return MakeReturnValue(This.runtime, n, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, n)
 }
 
 func init() {
@@ -43,7 +49,10 @@ func init() {
 		o.Set("print", func(call goja.FunctionCall) goja.Value {
 			args := GetAllArgs(&call)
 			n, err := fmt.Print(args...)
-			return MakeReturnValue(runtime, n, err)
+			if err != nil {
+				return MakeErrorValue(This.runtime, err)
+			}
+			return MakeReturnValue(runtime, n)
 		})
 	})
 }

@@ -23,7 +23,7 @@ func (This *_io) copy(call goja.FunctionCall) goja.Value {
 	}
 	dst, ok := p0obj.Export().(io.Writer)
 	if !ok {
-		panic(This.runtime.NewTypeError("p0 is not Writer: %T", p0))
+		panic(This.runtime.NewTypeError("p0 is not io.Writer type:%T", p0obj.Export()))
 	}
 
 	p1 := call.Argument(1).ToObject(This.runtime)
@@ -37,11 +37,14 @@ func (This *_io) copy(call goja.FunctionCall) goja.Value {
 	}
 	src, ok := p1obj.Export().(io.Reader)
 	if !ok {
-		panic(This.runtime.NewTypeError("p1 is not Reader: %T", p1))
+		panic(This.runtime.NewTypeError("p1 is not io.Reader type:%T", p1obj.Export()))
 	}
 
 	written, err := io.Copy(dst, src)
-	return MakeReturnValue(This.runtime, written, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, written)
 }
 
 func init() {

@@ -19,23 +19,26 @@ func (This *_file) write(call goja.FunctionCall) goja.Value {
 	if bts, ok := data.([]byte); ok {
 		err := ioutil.WriteFile(filename, bts, 0666)
 		if err != nil {
-			return This.runtime.ToValue(err.Error())
+			return MakeErrorValue(This.runtime, err)
 		}
 		return nil
 	}
-	return This.runtime.NewTypeError("file.write() data is not a byte array")
+	panic(This.runtime.NewTypeError("p1 is not []byte type:%T", data))
 }
 
 func (This *_file) read(call goja.FunctionCall) goja.Value {
 	filename := call.Argument(0).String()
 	data, err := ioutil.ReadFile(filename)
-	return MakeReturnValue(This.runtime, data, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, data)
 }
 
 func (This *_file) close(call goja.FunctionCall) goja.Value {
 	err := This.file.Close()
 	if err != nil {
-		return This.runtime.ToValue(err.Error())
+		return MakeErrorValue(This.runtime, err)
 	}
 	return nil
 }
@@ -47,7 +50,10 @@ func (This *_file) getPrototype(call goja.FunctionCall) goja.Value {
 func (This *_file) writeString(call goja.FunctionCall) goja.Value {
 	s := call.Argument(0).String()
 	n, err := This.file.WriteString(s)
-	return MakeReturnValue(This.runtime, n, err)
+	if err != nil {
+		return MakeErrorValue(This.runtime, err)
+	}
+	return MakeReturnValue(This.runtime, n)
 }
 
 func NewFile(runtime *goja.Runtime, file *os.File) *goja.Object {

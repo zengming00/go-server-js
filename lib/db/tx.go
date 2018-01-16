@@ -4,27 +4,18 @@ import (
 	"database/sql"
 
 	"github.com/dop251/goja"
+	"github.com/zengming00/go-server-js/lib"
 )
 
-type _tx struct {
-	runtime *goja.Runtime
-	tx      *sql.Tx
-}
-
-func (This *_tx) commit(call goja.FunctionCall) goja.Value {
-	err := This.tx.Commit()
-	if err != nil {
-		return This.runtime.ToValue(err.Error())
-	}
-	return nil
-}
-
 func NewTx(runtime *goja.Runtime, tx *sql.Tx) *goja.Object {
-	This := &_tx{
-		runtime: runtime,
-		tx:      tx,
-	}
+	// todo
 	o := runtime.NewObject()
-	o.Set("commit", This.commit)
+	o.Set("commit", func(call goja.FunctionCall) goja.Value {
+		err := tx.Commit()
+		if err != nil {
+			return lib.MakeErrorValue(runtime, err)
+		}
+		return nil
+	})
 	return o
 }

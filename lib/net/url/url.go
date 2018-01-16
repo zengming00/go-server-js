@@ -14,14 +14,11 @@ type _url struct {
 
 func (This *_url) parse(call goja.FunctionCall) goja.Value {
 	rawurl := call.Argument(0).String()
-	retVal := This.runtime.NewObject()
 	u, err := url.Parse(rawurl)
 	if err != nil {
-		retVal.Set("err", err.Error())
-		return retVal
+		return lib.MakeErrorValue(This.runtime, err)
 	}
-	retVal.Set("value", NewURL(This.runtime, u))
-	return retVal
+	return lib.MakeReturnValue(This.runtime, NewURL(This.runtime, u))
 }
 
 func (This *_url) queryEscape(call goja.FunctionCall) goja.Value {
@@ -31,33 +28,28 @@ func (This *_url) queryEscape(call goja.FunctionCall) goja.Value {
 
 func (This *_url) queryUnescape(call goja.FunctionCall) goja.Value {
 	str, err := url.QueryUnescape(call.Argument(0).String())
-	return lib.MakeReturnValue(This.runtime, str, err)
+	if err != nil {
+		return lib.MakeErrorValue(This.runtime, err)
+	}
+	return lib.MakeReturnValue(This.runtime, str)
 }
 
 func (This *_url) parseRequestURI(call goja.FunctionCall) goja.Value {
 	rawurl := call.Argument(0).String()
 	mUrl, err := url.ParseRequestURI(rawurl)
 	if err != nil {
-		return This.runtime.ToValue(map[string]interface{}{
-			"err": err.Error(),
-		})
+		return lib.MakeErrorValue(This.runtime, err)
 	}
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": NewURL(This.runtime, mUrl),
-	})
+	return lib.MakeReturnValue(This.runtime, NewURL(This.runtime, mUrl))
 }
 
 func (This *_url) parseQuery(call goja.FunctionCall) goja.Value {
 	query := call.Argument(0).String()
 	values, err := url.ParseQuery(query)
 	if err != nil {
-		return This.runtime.ToValue(map[string]interface{}{
-			"err": err.Error(),
-		})
+		return lib.MakeErrorValue(This.runtime, err)
 	}
-	return This.runtime.ToValue(map[string]interface{}{
-		"value": NewValues(This.runtime, values),
-	})
+	return lib.MakeReturnValue(This.runtime, NewValues(This.runtime, values))
 }
 
 func (This *_url) newValues(call goja.FunctionCall) goja.Value {
