@@ -194,7 +194,8 @@ func runFile(filename string, runtime *goja.Runtime, registry *require.Registry)
 		runtime.Interrupt("run code timeout, halt")
 	})
 
-	prg, err := goja.Compile(filename, string(src), false)
+	// (function(){ ... })() 用来允许直接在文件顶层return
+	prg, err := goja.Compile(filename, "(function(){"+string(src)+"\n})()", false)
 	if err != nil {
 		return nil, err
 	}
