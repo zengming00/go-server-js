@@ -50,7 +50,7 @@ func (This *_multipartFile) seek(call goja.FunctionCall) goja.Value {
 func (This *_multipartFile) close(call goja.FunctionCall) goja.Value {
 	err := This.file.Close()
 	if err != nil {
-		return lib.MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(lib.NewError(This.runtime, err))
 	}
 	return nil
 }

@@ -26,5 +26,11 @@ func init() {
 			return runtime.ToValue(str)
 		})
 
+		o.Set("ext", func(call goja.FunctionCall) goja.Value {
+			path := call.Argument(0).String()
+			str := filepath.Ext(path)
+			return runtime.ToValue(str)
+		})
+
 	})
 }

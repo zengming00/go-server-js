@@ -34,7 +34,7 @@ func (This *_os) remove(call goja.FunctionCall) goja.Value {
 	name := call.Argument(0).String()
 	err := os.Remove(name)
 	if err != nil {
-		return MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(NewError(This.runtime, err))
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func (This *_os) removeAll(call goja.FunctionCall) goja.Value {
 	path := call.Argument(0).String()
 	err := os.RemoveAll(path)
 	if err != nil {
-		return MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(NewError(This.runtime, err))
 	}
 	return nil
 }
@@ -53,7 +53,7 @@ func (This *_os) mkdir(call goja.FunctionCall) goja.Value {
 	perm := call.Argument(1).ToInteger()
 	err := os.Mkdir(name, os.FileMode(perm))
 	if err != nil {
-		return MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(NewError(This.runtime, err))
 	}
 	return nil
 }
@@ -63,7 +63,7 @@ func (This *_os) mkdirAll(call goja.FunctionCall) goja.Value {
 	perm := call.Argument(1).ToInteger()
 	err := os.MkdirAll(path, os.FileMode(perm))
 	if err != nil {
-		return MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(NewError(This.runtime, err))
 	}
 	return nil
 }
@@ -80,7 +80,7 @@ func (This *_os) chdir(call goja.FunctionCall) goja.Value {
 	dir := call.Argument(0).String()
 	err := os.Chdir(dir)
 	if err != nil {
-		return MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(NewError(This.runtime, err))
 	}
 	return nil
 }

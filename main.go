@@ -87,6 +87,9 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 				switch err := err.(type) {
 				case *goja.Exception:
 					fmt.Println("*goja.Exception:", err.String())
+					if v := err.Value().ToObject(runtime).Get("nativeType"); v != nil {
+						fmt.Printf("%T:%[1]v\n", v.Export())
+					}
 				case *goja.InterruptedError:
 					fmt.Println("*goja.InterruptedError:", err.String())
 				default:

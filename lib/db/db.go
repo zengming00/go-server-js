@@ -33,7 +33,7 @@ func (This *_db) query(call goja.FunctionCall) goja.Value {
 func (This *_db) close(call goja.FunctionCall) goja.Value {
 	err := This.db.Close()
 	if err != nil {
-		return lib.MakeErrorValue(This.runtime, err)
+		return This.runtime.ToValue(lib.NewError(This.runtime, err))
 	}
 	return nil
 }
