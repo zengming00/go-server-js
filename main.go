@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"strings"
 	"time"
 
@@ -37,8 +37,6 @@ var _sessionMgr *SessionMgr
 var _cacheMgr *CacheMgr
 
 type _server struct {
-	runtime          *goja.Runtime
-	registry         *require.Registry
 	config           *config
 	writeResultValue bool
 }
@@ -49,15 +47,11 @@ type config struct {
 	WorkDir               *string
 	SessionMaxLifeTimeSec int64
 	CacheGcIntervalSec    int64
+	ScriptTimeoutSec      int
 }
 
 func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
-	// 加上这行后，内存的使用情况好了一些
-	// runtime.GC()
-	// defer runtime.GC()
-
 	u := r.URL
-
 	file := u.Path
 	if file == "/" {
 		file = This.config.IndexFile
@@ -67,43 +61,54 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(file, _cwd) {
 		ext := filepath.Ext(file)
 		if ext == ".js" {
-			runtime := This.runtime
-			registry := This.registry
-
-			if runtime == nil {
-				runtime = goja.New()
-			}
-			if registry == nil {
-				registry = new(require.Registry)
-			}
+			runtime := goja.New()
+			registry := new(require.Registry)
 			runtime.Set("response", mhttp.NewResponse(runtime, w))
 			runtime.Set("request", mhttp.NewRequest(runtime, r))
 			runtime.Set("cache", NewCache(runtime, _cacheMgr))
 			runtime.Set("session", NewSession(runtime, _sessionMgr, w, r))
 
-			ret, err := runFile(file, runtime, registry)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				switch err := err.(type) {
-				case *goja.Exception:
-					fmt.Println("*goja.Exception:", err.String())
-					if v := err.Value().ToObject(runtime).Get("nativeType"); v != nil {
-						fmt.Printf("%T:%[1]v\n", v.Export())
+			normalEndCh := make(chan struct{})
+
+			go func() {
+				ret, err := runFile(file, runtime, registry)
+				if err != nil {
+					switch err := err.(type) {
+					case *goja.Exception:
+						w.WriteHeader(http.StatusInternalServerError)
+						fmt.Println("*goja.Exception:", err.String())
+						if v := err.Value().ToObject(runtime).Get("nativeType"); v != nil {
+							fmt.Printf("%T:%[1]v\n", v.Export())
+						}
+					case *goja.InterruptedError:
+						fmt.Println("*goja.InterruptedError:", err.String())
+					default:
+						fmt.Println("default err:", err)
 					}
-				case *goja.InterruptedError:
-					fmt.Println("*goja.InterruptedError:", err.String())
-				default:
-					fmt.Println("default:", err)
+					return
 				}
-				return
-			}
-			// if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
-			// 	w.WriteHeader(http.StatusOK)
-			// 	return
-			// }
-			// w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			if This.writeResultValue {
-				w.Write([]byte((*ret).String()))
+
+				// if goja.IsNull(*ret) || goja.IsUndefined(*ret) {
+				// 	w.WriteHeader(http.StatusOK)
+				// 	return
+				// }
+				if This.writeResultValue {
+					// w.Header().Set("Content-Type", "text/html; charset=utf-8")
+					w.Write([]byte((*ret).String()))
+				}
+				normalEndCh <- struct{}{}
+			}()
+
+			if This.config.ScriptTimeoutSec > 0 {
+				timeoutCh := time.After(time.Duration(This.config.ScriptTimeoutSec) * time.Second)
+				select {
+				case <-timeoutCh:
+					runtime.Interrupt("run code timeout, halt")
+					w.WriteHeader(http.StatusInternalServerError)
+				case <-normalEndCh:
+				}
+			} else {
+				<-normalEndCh
 			}
 			return
 		}
@@ -114,12 +119,12 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 func server() {
 	var err error
 	s := &_server{
-		// registry: new(require.Registry),
 		config: &config{
-			IndexFile: "/js/index.js",
+			IndexFile: "/index.js",
 			Port:      "8080",
 			SessionMaxLifeTimeSec: 60 * 15,
 			CacheGcIntervalSec:    60,
+			ScriptTimeoutSec:      -1,
 		},
 	}
 
@@ -139,8 +144,10 @@ func server() {
 
 	_sessionMgr = NewSessionMgr("sid", s.config.SessionMaxLifeTimeSec)
 	log.Printf("SessionMaxLifeTimeSec: %d\r\n", s.config.SessionMaxLifeTimeSec)
+
 	_cacheMgr = NewCacheMgr(s.config.CacheGcIntervalSec)
 	log.Printf("CacheGcIntervalSec: %d\r\n", s.config.CacheGcIntervalSec)
+	log.Printf("ScriptTimeoutSec: %d\r\n", s.config.ScriptTimeoutSec)
 
 	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 	// http.Handle("/public", s.fileServer)
@@ -155,7 +162,9 @@ func server() {
 
 func main() {
 	flag.Parse()
-	debug.SetGCPercent(1)
+	// debug.SetGCPercent(1)
+	rand.Seed(time.Now().UnixNano())
+
 	if len(os.Args) == 2 {
 		filename := os.Args[1]
 		start := time.Now()
@@ -186,13 +195,8 @@ func runFile(filename string, runtime *goja.Runtime, registry *require.Registry)
 	if err != nil {
 		return nil, err
 	}
-
 	registry.Enable(runtime)
 	console.Enable(runtime)
-
-	time.AfterFunc(60*time.Second, func() {
-		runtime.Interrupt("run code timeout, halt")
-	})
 
 	// (function(){ ... })() 用来允许直接在文件顶层return
 	prg, err := goja.Compile(filename, "(function(){"+string(src)+"\n})()", false)
