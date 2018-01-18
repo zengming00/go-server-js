@@ -7,50 +7,40 @@ import (
 	"github.com/zengming00/go-server-js/nodejs/require"
 )
 
-type _fmt struct {
-	runtime *goja.Runtime
-}
-
-func (This *_fmt) sprintf(call goja.FunctionCall) goja.Value {
-	format := call.Argument(0).String()
-	args := GetAllArgs(&call)
-	str := fmt.Sprintf(format, args[1:]...)
-	return This.runtime.ToValue(str)
-}
-
-func (This *_fmt) printf(call goja.FunctionCall) goja.Value {
-	format := call.Argument(0).String()
-	args := GetAllArgs(&call)
-	n, err := fmt.Printf(format, args[1:]...)
-	if err != nil {
-		return MakeErrorValue(This.runtime, err)
-	}
-	return MakeReturnValue(This.runtime, n)
-}
-
-func (This *_fmt) println(call goja.FunctionCall) goja.Value {
-	args := GetAllArgs(&call)
-	n, err := fmt.Println(args...)
-	if err != nil {
-		return MakeErrorValue(This.runtime, err)
-	}
-	return MakeReturnValue(This.runtime, n)
-}
-
 func init() {
 	require.RegisterNativeModule("fmt", func(runtime *goja.Runtime, module *goja.Object) {
-		This := &_fmt{
-			runtime: runtime,
-		}
 		o := module.Get("exports").(*goja.Object)
-		o.Set("sprintf", This.sprintf)
-		o.Set("printf", This.printf)
-		o.Set("println", This.println)
+		o.Set("sprintf", func(call goja.FunctionCall) goja.Value {
+			format := call.Argument(0).String()
+			args := GetAllArgs(&call)
+			str := fmt.Sprintf(format, args[1:]...)
+			return runtime.ToValue(str)
+		})
+
+		o.Set("printf", func(call goja.FunctionCall) goja.Value {
+			format := call.Argument(0).String()
+			args := GetAllArgs(&call)
+			n, err := fmt.Printf(format, args[1:]...)
+			if err != nil {
+				return MakeErrorValue(runtime, err)
+			}
+			return MakeReturnValue(runtime, n)
+		})
+
+		o.Set("println", func(call goja.FunctionCall) goja.Value {
+			args := GetAllArgs(&call)
+			n, err := fmt.Println(args...)
+			if err != nil {
+				return MakeErrorValue(runtime, err)
+			}
+			return MakeReturnValue(runtime, n)
+		})
+
 		o.Set("print", func(call goja.FunctionCall) goja.Value {
 			args := GetAllArgs(&call)
 			n, err := fmt.Print(args...)
 			if err != nil {
-				return MakeErrorValue(This.runtime, err)
+				return MakeErrorValue(runtime, err)
 			}
 			return MakeReturnValue(runtime, n)
 		})

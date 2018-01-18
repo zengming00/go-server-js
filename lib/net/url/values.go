@@ -6,64 +6,47 @@ import (
 	"github.com/dop251/goja"
 )
 
-type _values struct {
-	runtime *goja.Runtime
-	values  url.Values
-}
-
-func (This *_values) del(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	This.values.Del(key)
-	return nil
-}
-
-func (This *_values) add(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).String()
-	This.values.Add(key, value)
-	return nil
-}
-
-func (This *_values) encode(call goja.FunctionCall) goja.Value {
-	str := This.values.Encode()
-	return This.runtime.ToValue(str)
-}
-
-func (This *_values) get(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	str := This.values.Get(key)
-	return This.runtime.ToValue(str)
-}
-
-func (This *_values) gets(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	values := This.values[key]
-	return This.runtime.ToValue(values)
-}
-
-func (This *_values) getAll(call goja.FunctionCall) goja.Value {
-	return This.runtime.ToValue(map[string][]string(This.values))
-}
-
-func (This *_values) set(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).String()
-	This.values.Set(key, value)
-	return nil
-}
-
 func NewValues(runtime *goja.Runtime, values url.Values) *goja.Object {
-	This := &_values{
-		runtime: runtime,
-		values:  values,
-	}
 	o := runtime.NewObject()
-	o.Set("del", This.del)
-	o.Set("add", This.add)
-	o.Set("encode", This.encode)
-	o.Set("get", This.get)
-	o.Set("gets", This.gets)
-	o.Set("getAll", This.getAll)
-	o.Set("set", This.set)
+	o.Set("del", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		values.Del(key)
+		return nil
+	})
+
+	o.Set("add", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := call.Argument(1).String()
+		values.Add(key, value)
+		return nil
+	})
+
+	o.Set("encode", func(call goja.FunctionCall) goja.Value {
+		str := values.Encode()
+		return runtime.ToValue(str)
+	})
+
+	o.Set("get", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		str := values.Get(key)
+		return runtime.ToValue(str)
+	})
+
+	o.Set("gets", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		values := values[key]
+		return runtime.ToValue(values)
+	})
+
+	o.Set("getAll", func(call goja.FunctionCall) goja.Value {
+		return runtime.ToValue(map[string][]string(values))
+	})
+
+	o.Set("set", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := call.Argument(1).String()
+		values.Set(key, value)
+		return nil
+	})
 	return o
 }

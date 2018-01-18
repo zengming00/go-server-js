@@ -114,69 +114,53 @@ func (mgr *CacheMgr) Flush() {
 
 ///////////////////////////////////////////////////////////////////////////
 
-type _cache struct {
-	runtime  *goja.Runtime
-	cacheMgr *CacheMgr
-}
-
-func (This *_cache) set(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).Export()
-	expireSec := call.Argument(2).ToInteger()
-	if IsValidType(value) {
-		This.cacheMgr.Set(key, value, expireSec)
-		return nil
-	}
-	panic(This.runtime.NewTypeError("value type %T is not permitted", value))
-}
-
-func (This *_cache) get(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	if value, ok := This.cacheMgr.Get(key); ok {
-		return This.runtime.ToValue(value)
-	}
-	return goja.Null()
-}
-
-func (This *_cache) del(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	This.cacheMgr.Del(key)
-	return nil
-}
-
-func (This *_cache) flush(call goja.FunctionCall) goja.Value {
-	This.cacheMgr.Flush()
-	return nil
-}
-
-func (This *_cache) add(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).ToInteger()
-	expireSec := call.Argument(2).ToInteger()
-	oldValue := This.cacheMgr.Add(key, value, expireSec)
-	return This.runtime.ToValue(oldValue)
-}
-
-func (This *_cache) sub(call goja.FunctionCall) goja.Value {
-	key := call.Argument(0).String()
-	value := call.Argument(1).ToInteger()
-	expireSec := call.Argument(2).ToInteger()
-	oldValue := This.cacheMgr.Add(key, -value, expireSec)
-	return This.runtime.ToValue(oldValue)
-}
-
 func NewCache(runtime *goja.Runtime, cacheMgr *CacheMgr) *goja.Object {
-	This := &_cache{
-		runtime:  runtime,
-		cacheMgr: cacheMgr,
-	}
-
 	o := runtime.NewObject()
-	o.Set("set", This.set)
-	o.Set("get", This.get)
-	o.Set("del", This.del)
-	o.Set("add", This.add)
-	o.Set("sub", This.sub)
-	o.Set("flush", This.flush)
+	o.Set("set", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := call.Argument(1).Export()
+		expireSec := call.Argument(2).ToInteger()
+		if IsValidType(value) {
+			cacheMgr.Set(key, value, expireSec)
+			return nil
+		}
+		panic(runtime.NewTypeError("value type %T is not permitted", value))
+	})
+
+	o.Set("get", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		if value, ok := cacheMgr.Get(key); ok {
+			return runtime.ToValue(value)
+		}
+		return goja.Null()
+	})
+
+	o.Set("del", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		cacheMgr.Del(key)
+		return nil
+	})
+
+	o.Set("flush", func(call goja.FunctionCall) goja.Value {
+		cacheMgr.Flush()
+		return nil
+	})
+
+	o.Set("add", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := call.Argument(1).ToInteger()
+		expireSec := call.Argument(2).ToInteger()
+		oldValue := cacheMgr.Add(key, value, expireSec)
+		return runtime.ToValue(oldValue)
+	})
+
+	o.Set("sub", func(call goja.FunctionCall) goja.Value {
+		key := call.Argument(0).String()
+		value := call.Argument(1).ToInteger()
+		expireSec := call.Argument(2).ToInteger()
+		oldValue := cacheMgr.Add(key, -value, expireSec)
+		return runtime.ToValue(oldValue)
+	})
+
 	return o
 }
