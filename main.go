@@ -95,7 +95,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 				// }
 				if This.writeResultValue {
 					// w.Header().Set("Content-Type", "text/html; charset=utf-8")
-					w.Write([]byte((*ret).String()))
+					w.Write([]byte((ret).String()))
 				}
 				normalEndCh <- true
 			}()
@@ -184,14 +184,14 @@ func main() {
 			}
 			os.Exit(64)
 		}
-		fmt.Println("result:", *r)
+		fmt.Println("result:", r)
 		fmt.Printf("done (%s)", time.Since(start))
 		return
 	}
 	server()
 }
 
-func runFile(filename string, runtime *goja.Runtime, registry *require.Registry) (*goja.Value, error) {
+func runFile(filename string, runtime *goja.Runtime, registry *require.Registry) (goja.Value, error) {
 	src, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ func runFile(filename string, runtime *goja.Runtime, registry *require.Registry)
 	if err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 func initConfig(path string, v interface{}) {
