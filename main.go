@@ -68,7 +68,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 			runtime.Set("cache", NewCache(runtime, _cacheMgr))
 			runtime.Set("session", NewSession(runtime, _sessionMgr, w, r))
 
-			normalEndCh := make(chan struct{})
+			normalEndCh := make(chan bool)
 
 			go func() {
 				ret, err := runFile(file, runtime, registry)
@@ -85,6 +85,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 					default:
 						fmt.Println("default err:", err)
 					}
+					normalEndCh <- false
 					return
 				}
 
@@ -96,7 +97,7 @@ func (This *_server) handler(w http.ResponseWriter, r *http.Request) {
 					// w.Header().Set("Content-Type", "text/html; charset=utf-8")
 					w.Write([]byte((*ret).String()))
 				}
-				normalEndCh <- struct{}{}
+				normalEndCh <- true
 			}()
 
 			if This.config.ScriptTimeoutSec > 0 {
