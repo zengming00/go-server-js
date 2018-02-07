@@ -20,6 +20,16 @@
 # 下载试用 (download)
 https://github.com/zengming00/go-server-js/releases
 
+# 用go-server-js写的一个项目
+https://github.com/zengming00/go-server-js-testShop
+
+# 用go-server-js写的项目移植为go语言代码，两种等效代码对比
+
+https://github.com/zengming00/go-testShop
+
+![两种等效代码对比](https://github.com/zengming00/go-testShop/raw/master/public/uploads/1.png)
+
+
 # 编译前的准备
 
 因为使用的一些包在国内环境无法直接go get到，所以要做一些特殊的操作
