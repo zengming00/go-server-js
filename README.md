@@ -21,11 +21,11 @@
 
 所以我决定自己做一个，为此我曾经注册了serverjs.cn域名，我尝试过用c语言来写，C语言门槛太高了只做了一个能够连上redis的东西，还得靠cgi模式来提供服务，最终放弃了，后来接触了go语言，于是有了实现它的可能，最早是用的otto，后来才用的goja。
 
-从开始到完成0.0.2版本应该花了一个多月吧，基本上都是在学go语言和尝试一些功能细节，最后还花时间将我一年前写的一个nodejs写的商城用我自创的go-server-js技术重写了一遍（项目地址：https://github.com/zengming00/go-server-js-testShop ），并且和go-server-js 0.0.2捆绑发布。
+从开始到完成0.0.2版本应该花了一个多月吧，基本上都是在学go语言和尝试一些功能细节，最后还花时间将我一年前写的一个nodejs写的商城用我自创的go-server-js技术重写了一遍（ 项目地址：https://github.com/zengming00/go-server-js-testShop ），并且和go-server-js 0.0.2捆绑发布。
 
-再后来，为了验证go-server-js写的项目能不能够方便的移植到原生go语言项目，我又把这个商城用go语言写了一遍（项目地址：https://github.com/zengming00/go-testShop ），得益于当时选择照抄go语言的编程风格，只需要将go-server-js封装好的一些功能实现，js代码到go语言代码的转换是很方便的
+再后来，为了验证go-server-js写的项目能不能够方便的移植到原生go语言项目，我又把这个商城用go语言写了一遍（ 项目地址：https://github.com/zengming00/go-testShop ），得益于当时选择照抄go语言的编程风格，只需要将go-server-js封装好的一些功能实现，js代码到go语言代码的转换是很方便的
 
-# 下载试用 (download)，下载后运行go-server-js，打开http://127.0.0.1:8080/就是一个商城
+# 下载试用 (download)，下载后运行go-server-js，打开 http://127.0.0.1:8080/ 就是一个商城
 https://github.com/zengming00/go-server-js/releases
 
 # 用go-server-js写的一个项目
@@ -92,28 +92,32 @@ go get -v github.com/zengming00/go-server-js
 ```js
 response.write('helloworld');
 ```
-运行go-server-js然后在浏览器打开http://127.0.0.1:8080/test.js就可以看到helloworld了，修改文件后不需要重启服务器
+运行go-server-js然后在浏览器打开 http://127.0.0.1:8080/test.js 就可以看到helloworld了，修改文件后不需要重启服务器
 更多的教程不如直接看附带的商城源码，一些api与go语言是完全一样的，因此为后期移植到原生go语言提供了极大便利
 
 ## 一些实现上的细节
 ```go
     // 在go语言中如果是返回一个error，要经过转换才能给js使用
-		err := db.Close()
-		if err != nil {
-			return runtime.ToValue(lib.NewError(runtime, err))
-		}
-        return nil
+       err := db.Close()
+       if err != nil {
+           return runtime.ToValue(lib.NewError(runtime, err))
+       }
+       return nil
+	
     // 如果类型无法处理，应该用这种方式抛出
-        panic(runtime.NewTypeError("p0 is not a string type:%T", args[0]))
+       panic(runtime.NewTypeError("p0 is not a string type:%T", args[0]))
+	
     // 如果有多个返回值，应该返回一个对象供js使用
-		tx, err := db.Begin()
-		if err != nil {
-			return lib.MakeErrorValue(runtime, err)
-		}
-        return lib.MakeReturnValue(runtime, NewTx(runtime, tx))
+       tx, err := db.Begin()
+       if err != nil {
+           return lib.MakeErrorValue(runtime, err)
+       }
+       return lib.MakeReturnValue(runtime, NewTx(runtime, tx))
+		
     // 动态参数
-		args := lib.GetAllArgs(&call)
-        err := rows.Scan(args...)
+       args := lib.GetAllArgs(&call)
+       err := rows.Scan(args...)
+       
     // go语言原生类型的传递
         p0 := GetNativeType(runtime, &call, 0)
         if err, ok := p0.(error); ok {
@@ -121,6 +125,6 @@ response.write('helloworld');
         }
         panic(runtime.NewTypeError("p0 is not error type:%T", p0))
     // 注意函数签名的不同
-		func(call goja.FunctionCall) goja.Value {}
+        func(call goja.FunctionCall) goja.Value {}
         func(call goja.ConstructorCall) *Object {}
 ```
