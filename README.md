@@ -28,6 +28,17 @@
 # 下载试用 (download)，下载后运行go-server-js，打开 http://127.0.0.1:8080/ 就是一个商城
 https://github.com/zengming00/go-server-js/releases
 
+## 入门之helloworld
+整个服务器就是go-server-js这个文件，不需要任何其它东西，运行它会在当前目录下生成一个config.json，这个是用来修改一些服务器配置的，比如端口号之类的。
+
+在当前目录下创建test.js内容为
+
+```js
+response.write('helloworld');
+```
+运行go-server-js然后在浏览器打开 http://127.0.0.1:8080/test.js 就可以看到helloworld了，修改文件后不需要重启服务器
+更多的教程不如直接看附带的商城源码，一些api与go语言是完全一样的，因此为后期移植到原生go语言提供了极大便利
+
 # 用go-server-js写的一个项目
 https://github.com/zengming00/go-server-js-testShop
 
@@ -84,16 +95,6 @@ go get -v github.com/zengming00/go-server-js
 
 如果要编译sqlite，在windows下运行build.bat，在linux下运行build_linux.sh
 
-## helloworld
-整个服务器就是go-server-js这个文件，不需要任何其它东西，运行它会在当前目录下生成一个config.json，这个是用来修改一些服务器配置的，比如端口号之类的。
-
-在当前目录下创建test.js内容为
-
-```js
-response.write('helloworld');
-```
-运行go-server-js然后在浏览器打开 http://127.0.0.1:8080/test.js 就可以看到helloworld了，修改文件后不需要重启服务器
-更多的教程不如直接看附带的商城源码，一些api与go语言是完全一样的，因此为后期移植到原生go语言提供了极大便利
 
 ## 一些实现上的细节
 ```go
