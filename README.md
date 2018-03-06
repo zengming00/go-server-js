@@ -39,8 +39,10 @@ response.write('helloworld');
 运行go-server-js然后在浏览器打开 http://127.0.0.1:8080/test.js 就可以看到helloworld了，修改文件后不需要重启服务器
 更多的教程不如直接看附带的商城源码，一些api与go语言是完全一样的，因此为后期移植到原生go语言提供了极大便利
 
-# 用go-server-js写的一个项目
-https://github.com/zengming00/go-server-js-testShop
+# 用go-server-js写的项目
+一个商城：https://github.com/zengming00/go-server-js-testShop
+
+wooyun本地镜像：https://github.com/zengming00/go-server-js-wooyun
 
 # 用go-server-js写的项目移植为go语言代码，两种等效代码对比
 
