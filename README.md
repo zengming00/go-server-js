@@ -131,3 +131,16 @@ go get -v github.com/zengming00/go-server-js
         func(call goja.FunctionCall) goja.Value {}
         func(call goja.ConstructorCall) *Object {}
 ```
+
+# docker
+```Dockerfile
+FROM scratch
+COPY . /
+EXPOSE 8080
+CMD [ "/go-server-js" ]
+```
+```sh
+$ docker pull zengming00/go-server-js
+$ docker run -d --rm -p 80:8080 zengming00/go-server-js
+```
+
