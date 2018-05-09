@@ -144,3 +144,7 @@ $ docker pull zengming00/go-server-js
 $ docker run -d --rm -p 80:8080 zengming00/go-server-js
 ```
 
+# docker 编译 mips 环境
+docker pull zengming00/golang-mips
+
+
