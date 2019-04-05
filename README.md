@@ -1,3 +1,8 @@
+# 未来将使用的 License
+<a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg" alt="996.icu" /></a>
+
+在2020年4月5日以后将正式使用反996许可证，目的是阻止违反劳动法的公司使用许可证下的软件或代码，并强迫这些公司权衡他们的行为
+
 # a js server
 一种新的javascript写服务端程序的方案，没有回调，完全不同于node.js
 
