@@ -1,7 +1,4 @@
-# 未来将使用的 License
 <a href="https://996.icu"><img src="https://img.shields.io/badge/link-996.icu-red.svg" alt="996.icu" /></a>
-
-在2020年4月5日以后将正式使用反996许可证，目的是阻止违反劳动法的公司使用许可证下的软件或代码，并强迫这些公司权衡他们的行为
 
 # a js server
 一种新的javascript写服务端程序的方案，没有回调，完全不同于node.js
@@ -15,7 +12,7 @@
 4. 完全不同于node.js，没有回调，程序更易维护和编写，推荐使用typescript
 
 缺点：
-1. 性能不高，和node.js完全不是一个级别的，目前能完全满足小应用的需求，在这里能找到一份测试报告：https://github.com/zengming00/go-server-js-testShop
+1. 由于每次js都是从磁盘读取再执行，因此性能不高，和node.js完全不是一个级别的，目前能完全满足小应用的需求，在这里能找到一份测试报告：https://github.com/zengming00/go-server-js-testShop
 2. api目前不够完善，我只是需要什么就往上面加什么，你也可以
 3. 目前没有文档支持，没空写，哈哈
 4. 没有debug功能，调试不方便，这是个很严重的问题，目前没有办法
@@ -56,83 +53,47 @@ https://github.com/zengming00/go-testShop
 ![两种等效代码对比](https://github.com/zengming00/go-testShop/raw/master/public/uploads/1.png)
 
 
-# 如果你想尝试自己编译，需要准备点东西
-
-因为使用的一些包在国内环境无法直接go get到，所以要做一些特殊的操作
-
-**方法一，在GOROOT目录下执行下列命令(可以通过go env命令获取此目录的路径)**
-
-```
-mkdir -p src/golang.org/x/
-cd src/golang.org/x/
-git clone https://github.com/golang/text
-git clone https://github.com/golang/net
-```
-
-
-**方法二，设置git代理**
-* set
-```
-git config --global http.proxy http://127.0.0.1:8087
-
-git config --global https.proxy https://127.0.0.1:8087
-```
-* unset
-```
-git config --global --unset http.proxy
-
-git config --global --unset https.proxy
-```
-* disable ssl 
-```
-git config --global http.sslVerify false
-```
-
-* 为dep设置代理
-```
-http_proxy=http://127.0.0.1:8087  dep ...
-```
 ## 获取源码
 ```
 go get -v github.com/zengming00/go-server-js
 ```
-也可以手动克隆此项目，建议使用dep工具安装依赖的包
 
-默认不会编译sqlite，在windows下编译sqlite需要安装 TDM-GCC 并 set CGO_ENABLED = 1
+默认不会编译sqlite，在windows下编译sqlite需要安装 TDM-GCC 或 mingw64 并 set CGO_ENABLED = 1
 
 如果要编译sqlite，在windows下运行build.bat，在linux下运行build_linux.sh
 
 
-## 一些实现上的细节
+## 内部实现功能时需要注意的地方
 ```go
-    // 在go语言中如果是返回一个error，要经过转换才能给js使用
+        // 在go语言中如果是返回一个error，要经过转换才能给js使用
        err := db.Close()
        if err != nil {
            return runtime.ToValue(lib.NewError(runtime, err))
        }
        return nil
 	
-    // 如果类型无法处理，应该用这种方式抛出
+        // 如果类型无法处理，应该用这种方式抛出
        panic(runtime.NewTypeError("p0 is not a string type:%T", args[0]))
 	
-    // 如果有多个返回值，应该返回一个对象供js使用
+        // 如果有多个返回值，应该返回一个对象供js使用
        tx, err := db.Begin()
        if err != nil {
            return lib.MakeErrorValue(runtime, err)
        }
        return lib.MakeReturnValue(runtime, NewTx(runtime, tx))
 		
-    // 动态参数
+        // 动态参数
        args := lib.GetAllArgs(&call)
        err := rows.Scan(args...)
        
-    // go语言原生类型的传递
+        // go语言原生类型的传递
         p0 := GetNativeType(runtime, &call, 0)
         if err, ok := p0.(error); ok {
             return runtime.ToValue(os.IsNotExist(err))
         }
         panic(runtime.NewTypeError("p0 is not error type:%T", p0))
-    // 注意函数签名的不同
+
+        // 注意函数签名的不同
         func(call goja.FunctionCall) goja.Value {}
         func(call goja.ConstructorCall) *Object {}
 ```
